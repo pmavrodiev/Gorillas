@@ -19,7 +19,17 @@ class window.GhostsAndMonstersGame
   constructor: (canvas, debugCanvas, statsCanvas) ->
     g = new Graphics()    
     @world = new EaselBoxWorld(this, frameRate, canvas, debugCanvas, gravityX, gravityY, PIXELS_PER_METER)
-    @world.addLandscape(width:canvas.width,height:canvas.height)
+    
+    @world.addLandscape(
+      width:canvas.width,
+      height:canvas.height,
+      iterations:7,
+      smoothness:0.05,
+      vertical_offset: canvas.height-150
+      type: 'static'
+    )
+    
+    #@world.addLandscape(width:canvas.width,height:canvas.height)
     # optional: set up frame rate display
     @stats = new Stats()
     statsCanvas.appendChild @stats.domElement

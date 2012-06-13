@@ -237,7 +237,7 @@ td { vertical-align: top; }
 	margin: 0 0 0 10px;
 }
 canvas {
-  background-color: #000;
+  background-color: #F0DDDD;
   /*make canvases unselectable*/ 
   -moz-user-select: -moz-none;
   -khtml-user-select: none;

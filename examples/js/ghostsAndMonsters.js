@@ -32,7 +32,11 @@
       this.world = new EaselBoxWorld(this, frameRate, canvas, debugCanvas, gravityX, gravityY, PIXELS_PER_METER);
       this.world.addLandscape({
         width: canvas.width,
-        height: canvas.height
+        height: canvas.height,
+        iterations: 7,
+        smoothness: 0.05,
+        vertical_offset: canvas.height - 150,
+        type: 'static'
       });
       this.stats = new Stats();
       statsCanvas.appendChild(this.stats.domElement);

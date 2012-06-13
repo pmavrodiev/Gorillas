@@ -198,49 +198,52 @@
 
   })(EaselBoxObject);
 
+  window.EaselBoxLandscapeRectangle = (function(_super) {
+
+    __extends(EaselBoxLandscapeRectangle, _super);
+
+    function EaselBoxLandscapeRectangle(options) {
+      var box2dShape, hillVector, object, x1, x2, x3, x4, y1, y2, y3, y4;
+      object = new Shape();
+      object.graphics.beginStroke("blue");
+      object.graphics.setStrokeStyle(1);
+      object.graphics.moveTo(options.bottom_left_corner.x, options.bottom_left_corner.y);
+      object.graphics.lineTo(options.top_left_corner.x, options.top_left_corner.y);
+      object.graphics.lineTo(options.top_right_corner.x, options.top_right_corner.y);
+      object.graphics.lineTo(options.bottom_right_corner.x, options.bottom_right_corner.y);
+      hillVector = new Vector(4);
+      x1 = options.bottom_left_corner.x / PIXELS_PER_METER;
+      y1 = options.bottom_left_corner.y / PIXELS_PER_METER;
+      x2 = options.top_left_corner.x / PIXELS_PER_METER;
+      y2 = options.top_left_corner.y / PIXELS_PER_METER;
+      x3 = options.top_right_corner.x / PIXELS_PER_METER;
+      y3 = options.top_right_corner.y / PIXELS_PER_METER;
+      x4 = options.bottom_right_corner.x / PIXELS_PER_METER;
+      y4 = options.bottom_right_corner.y / PIXELS_PER_METER;
+      hillVector[0] = new Box2D.Common.Math.b2Vec2(x1, y1);
+      hillVector[1] = new Box2D.Common.Math.b2Vec2(x2, y3);
+      hillVector[2] = new Box2D.Common.Math.b2Vec2(x3, y3);
+      hillVector[3] = new Box2D.Common.Math.b2Vec2(x4, y4);
+      box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsArray(hillVector, 4);
+      EaselBoxLandscapeRectangle.__super__.constructor.call(this, object, box2dShape, options);
+    }
+
+    return EaselBoxLandscapeRectangle;
+
+  })(EaselBoxObject);
+
   PIXELS_PER_METER = 30;
 
   window.EaselBoxWorld = (function() {
-    var generate_vpoints, landscape_voffset, minFPS;
+    var minFPS;
 
     minFPS = 10;
-
-    landscape_voffset = 0;
-
-    /*
-      constructor: (@callingObj, frameRate, canvas, debugCanvas, gravityX, gravityY, @pixelsPerMeter) -> 
-        PIXELS_PER_METER = @pixelsPerMeter
-        
-        #this static class comes from easelsj
-        Ticker.addListener this # set up timing loop -- obj must supply a tick() method
-        Ticker.setFPS frameRate
-                     
-        # set up Box2d
-        @box2dWorld = new Box2D.Dynamics.b2World(new Box2D.Common.Math.b2Vec2(gravityX, gravityY), true)
-    
-        # set up EaselJS
-        @easelStage = new Stage(canvas)        
-    
-        # array of entities to update later
-        @objects = []
-    
-        # Set up Box2d debug drawing
-        debugDraw = new Box2D.Dynamics.b2DebugDraw()
-        debugDraw.SetSprite debugCanvas.getContext("2d")
-        debugDraw.SetDrawScale @pixelsPerMeter
-        debugDraw.SetFillAlpha 0.3
-        debugDraw.SetLineThickness 2.0
-        debugDraw.SetFlags Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit | Box2D.Dynamics.b2DebugDraw.e_centerOfMassBit
-        @box2dWorld.SetDebugDraw debugDraw
-    */
-
 
     function EaselBoxWorld(callingObj, frameRate, canvas, debugCanvas, gravityX, gravityY, pixelsPerMeter) {
       var debugDraw;
       this.callingObj = callingObj;
       this.pixelsPerMeter = pixelsPerMeter;
       PIXELS_PER_METER = this.pixelsPerMeter;
-      this.landscape_voffset = canvas.height - 150;
       Ticker.addListener(this);
       Ticker.setFPS(frameRate);
       this.box2dWorld = new Box2D.Dynamics.b2World(new Box2D.Common.Math.b2Vec2(gravityX, gravityY), true);
@@ -255,8 +258,14 @@
       this.box2dWorld.SetDebugDraw(debugDraw);
     }
 
-    generate_vpoints = function(height_offset, min_width, max_width, iterations, r) {
-      var bin_size, bound, firstElement, iter, left_idx, max, midpoint_index, midpoint_x, midpoint_y, min, queue, right_idx, ticks, vpoints_vector;
+    EaselBoxWorld.prototype.addLandscape = function(options) {
+      var bound, firstElement, height, height_offset, i, iter, iterations, left_idx, max, max_width, midpoint_index, midpoint_x, midpoint_y, min, min_width, queue, r, right_idx, ticks, tinyRectangle, vpoints_vector, x1, x2, y1, y2, _i, _ref, _results;
+      height_offset = options.vertical_offset;
+      min_width = 0;
+      max_width = options.width;
+      iterations = options.iterations;
+      r = options.smoothness;
+      height = options.height;
       bound = (function() {
 
         function bound(min_idx, max_idx, iteration) {
@@ -271,7 +280,6 @@
       min = -50;
       max = 50;
       ticks = Math.pow(2, iterations);
-      bin_size = (max_width - min_width) / ticks;
       vpoints_vector = new Array(ticks + 1);
       vpoints_vector[0] = new Array(2);
       vpoints_vector[ticks] = new Array(2);
@@ -306,25 +314,30 @@
           queue.push(new bound((right_idx + left_idx) / 2, right_idx, iter + 1));
         }
       }
-      return vpoints_vector;
-    };
-
-    EaselBoxWorld.prototype.addLandscape = function(dimensions) {
-      var landscape, landscape_vpoints;
-      if (dimensions.height && dimensions.width) {
-        landscape_vpoints = generate_vpoints(this.landscape_voffset, 0, dimensions.width, 20, 0.05);
-        landscape = new Shape();
-        landscape.graphics.beginStroke("grey");
-        landscape.graphics.setStrokeStyle(2);
-        landscape.graphics.moveTo(0, this.landscape_voffset);
-        return this.easelStage.addChild(landscape);
+      _results = [];
+      for (i = _i = 0, _ref = vpoints_vector.length - 2; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        x1 = vpoints_vector[i][0];
+        x2 = vpoints_vector[i + 1][0];
+        y1 = vpoints_vector[i][1];
+        y2 = vpoints_vector[i + 1][1];
+        _results.push(tinyRectangle = this.addEntity({
+          whoami: "inefficient rectangle",
+          bottom_left_corner: new Box2D.Common.Math.b2Vec2(x1, height),
+          top_left_corner: new Box2D.Common.Math.b2Vec2(x1, y1),
+          top_right_corner: new Box2D.Common.Math.b2Vec2(x2, y2),
+          bottom_right_corner: new Box2D.Common.Math.b2Vec2(x2, height),
+          type: options.type
+        }));
       }
+      return _results;
     };
 
     EaselBoxWorld.prototype.addEntity = function(options) {
       var object;
       object = null;
-      if (options.radiusPixels) {
+      if (options.whoami) {
+        object = new EaselBoxLandscapeRectangle(options);
+      } else if (options.radiusPixels) {
         object = new EaselBoxCircle(options.radiusPixels, options);
       } else {
         object = new EaselBoxRectangle(options.widthPixels, options.heightPixels, options);
