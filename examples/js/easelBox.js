@@ -221,7 +221,7 @@
       x4 = options.bottom_right_corner.x / PIXELS_PER_METER;
       y4 = options.bottom_right_corner.y / PIXELS_PER_METER;
       hillVector[0] = new Box2D.Common.Math.b2Vec2(x1, y1);
-      hillVector[1] = new Box2D.Common.Math.b2Vec2(x2, y3);
+      hillVector[1] = new Box2D.Common.Math.b2Vec2(x2, y2);
       hillVector[2] = new Box2D.Common.Math.b2Vec2(x3, y3);
       hillVector[3] = new Box2D.Common.Math.b2Vec2(x4, y4);
       box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsArray(hillVector, 4);

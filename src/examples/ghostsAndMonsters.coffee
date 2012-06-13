@@ -23,7 +23,7 @@ class window.GhostsAndMonstersGame
     @world.addLandscape(
       width:canvas.width,
       height:canvas.height,
-      iterations:7,
+      iterations:8,
       smoothness:0.05,
       vertical_offset: canvas.height-150
       type: 'static'
