@@ -11,6 +11,7 @@ joined_file_args = ['-c', '-j', 'examples/js/easelBox.js',
   'src/easelBox/easelBoxCircle',
   'src/easelBox/easelBoxRectangle',
   'src/easelBox/easelBoxLandscapeRectangle',
+  'src/easelBox/easelBoxMonkey',
   'src/easelBox/easelBoxWorld',
 ]
 

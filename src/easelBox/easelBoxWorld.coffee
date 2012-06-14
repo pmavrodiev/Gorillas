@@ -94,6 +94,45 @@ class window.EaselBoxWorld
       ) 
     
   
+  addMonkey: (options) ->
+    object = new EaselBoxMonkey(options)
+    #add to canvas
+    @easelStage.addChild object.easelObj
+    
+    #create the actual Box2D bodies
+    object.headbody = @box2dWorld.CreateBody(object.bodyDefHead)
+    object.torsobody = @box2dWorld.CreateBody(object.bodyDefTorso)
+    object.lowerbodybody = @box2dWorld.CreateBody(object.bodyDefLowerbody)
+    #bind bodies to shapes
+    object.headbody.CreateFixture(object.fixDefHead)
+    object.torsobody.CreateFixture(object.fixDefTorso)
+    object.lowerbodybody.CreateFixture(object.fixDefLowerbody)
+    object.setType('static')
+    object.setState(options)
+    @objects.push(object)    
+    #CREATE WELD JOINTS BETWEEN (HEAD,TORSO) AND (TORSO,LOWERBODY)
+    #head->torso
+    object.headtorsoweldJointDef.Initialize(object.headbody,object.torsobody,object.headbody.GetWorldCenter())
+    #torso->lower body
+    object.torsolowerbodyweldJointDef.Initialize(object.torsobody,object.lowerbodybody,object.lowerbodybody.GetWorldCenter())
+    @box2dWorld.CreateJoint(object.headtorsoweldJointDef)
+    @box2dWorld.CreateJoint(object.torsolowerbodyweldJointDef)
+  
+    return object
+    
+    
+  addArrow: (options) ->
+    object=new EaselBoxArrow(options)
+    #add to canvas
+    @easelStage.addChild object.easelObj
+    #create the actual Box2D bodies
+    object.arrowbody.CreateFixture(object.arrowbodyFixDef)
+    object.arrowhead.CreateFixture(object.arrowheadFixDef)
+    object.setType
+    
+    
+    return object  
+  
   addEntity: (options) -> 
     object = null
     if options.whoami
@@ -132,7 +171,7 @@ class window.EaselBoxWorld
     # check to see if main object has a callback for each tick
     if typeof @callingObj.tick == 'function'
       @callingObj.tick()
-      
+ 
     @easelStage.update()
     @box2dWorld.DrawDebugData()
   

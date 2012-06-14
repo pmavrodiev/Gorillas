@@ -232,6 +232,173 @@
 
   })(EaselBoxObject);
 
+  window.EaselBoxMonkey = (function() {
+    var getType;
+
+    function EaselBoxMonkey(options) {
+      var density, friction, restitution,
+        _this = this;
+      this.easelObj = new Bitmap(options.imgSrc);
+      this.easelObj.regX = options.regX;
+      this.easelObj.regY = options.regY;
+      this.easelObj.scaleX = options.scaleX;
+      this.easelObj.scaleY = options.scaleY;
+      this.size_head_meters = options.size_head / PIXELS_PER_METER;
+      this.size_torso_meters = options.size_torso / PIXELS_PER_METER;
+      this.size_lowerbody_meters = options.size_lowerbody / PIXELS_PER_METER;
+      this.monkeyhead = new Box2D.Collision.Shapes.b2PolygonShape.AsBox(this.size_head_meters, this.size_head_meters);
+      this.monkeytorso = new Box2D.Collision.Shapes.b2PolygonShape.AsBox(this.size_torso_meters, this.size_torso_meters);
+      this.monkeylowerbody = new Box2D.Collision.Shapes.b2PolygonShape.AsBox(this.size_lowerbody_meters, this.size_lowerbody_meters);
+      density = (options && options.density) || 1;
+      friction = (options && options.friction) || 0.5;
+      restitution = (options && options.restitution) || 0.2;
+      this.fixDefHead = new Box2D.Dynamics.b2FixtureDef;
+      this.fixDefHead.density = density;
+      this.fixDefHead.friction = friction;
+      this.fixDefHead.restitution = restitution;
+      this.fixDefHead.shape = this.monkeyhead;
+      this.bodyDefHead = new Box2D.Dynamics.b2BodyDef;
+      this.headbody = null;
+      this.fixDefTorso = new Box2D.Dynamics.b2FixtureDef;
+      this.fixDefTorso.density = density;
+      this.fixDefTorso.friction = friction;
+      this.fixDefTorso.restitution = restitution;
+      this.fixDefTorso.shape = this.monkeytorso;
+      this.bodyDefTorso = new Box2D.Dynamics.b2BodyDef;
+      this.torsobody = null;
+      this.fixDefLowerbody = new Box2D.Dynamics.b2FixtureDef;
+      this.fixDefLowerbody.density = density;
+      this.fixDefLowerbody.friction = friction;
+      this.fixDefLowerbody.restitution = restitution;
+      this.fixDefLowerbody.shape = this.monkeylowerbody;
+      this.bodyDefLowerbody = new Box2D.Dynamics.b2BodyDef;
+      this.lowerbodybody = null;
+      this.headtorsoweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
+      this.torsolowerbodyweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
+      this.easelObj.onPress = function(eventPress) {
+        return eventPress.onMouseMove = function(event) {
+          return _this.setState({
+            xPixels: event.stageX,
+            yPixels: event.stageY
+          });
+        };
+      };
+    }
+
+    EaselBoxMonkey.prototype.update = function() {
+      this.easelObj.x = this.torsobody.GetPosition().x * PIXELS_PER_METER;
+      this.easelObj.y = this.torsobody.GetPosition().y * PIXELS_PER_METER;
+      return this.easelObj.rotation = this.torsobody.GetAngle() * (180 / Math.PI);
+    };
+
+    EaselBoxMonkey.prototype.ApplyForce = function(worldgravity) {
+      this.headbody.ApplyForce(this.headbody.GetMass() * -worldgravity, this.headbody.GetWorldCenter());
+      this.torsobody.ApplyForce(this.torsobody.GetMass() * -worldgravity, this.torsobody.GetWorldCenter());
+      return this.lowerbodybody.ApplyForce(this.lowerbodybody.GetMass() * -worldgravity, this.lowerbodybody.GetWorldCenter());
+    };
+
+    EaselBoxMonkey.prototype.setType = function(type) {
+      this.headbody.SetType(getType(type));
+      this.torsobody.SetType(getType(type));
+      return this.lowerbodybody.SetType(getType(type));
+    };
+
+    EaselBoxMonkey.prototype.setState = function(options) {
+      var angleDegrees, angleRadians, angularVelDegrees, angularVelRadians, xMeters, xPixels, xVelMeters, xVelPixels, yMeters, yPixels, yVelMeters, yVelPixels;
+      if (options && options.xPixels) {
+        xPixels = options.xPixels;
+        xMeters = xPixels / PIXELS_PER_METER;
+      } else if (options && options.Xmeters) {
+        xMeters = options.Xmeters;
+        xPixels = xMeters * PIXELS_PER_METER;
+      } else {
+        xMeters = 0;
+        xPixels = 0;
+      }
+      if (options && options.yPixels) {
+        yPixels = options.yPixels;
+        yMeters = yPixels / PIXELS_PER_METER;
+      } else if (options && options.Xmeters) {
+        yMeters = options.Ymeters;
+        yPixels = YMeters * PIXELS_PER_METER;
+      } else {
+        yMeters = 0;
+        yPixels = 0;
+      }
+      if (options && options.xVelPixels) {
+        xVelPixels = options.xVelPixels;
+        xVelMeters = xVelPixels / PIXELS_PER_METER;
+      } else if (options && options.xVelMeters) {
+        xVelMeters = options.xVelMeters;
+        xVelPixels = xVelMeters * PIXELS_PER_METER;
+      } else {
+        xVelMeters = 0;
+        xVelPixels = 0;
+      }
+      if (options && options.yVelPixels) {
+        yVelPixels = options.yVelPixels;
+        yVelMeters = yVelPixels / PIXELS_PER_METER;
+      } else if (options && options.yVelMeters) {
+        yVelMeters = options.yVelMeters;
+        yVelPixels = yVelMeters * PIXELS_PER_METER;
+      } else {
+        yVelMeters = 0;
+        yVelPixels = 0;
+      }
+      if (options && options.angleDegrees) {
+        angleDegrees = options.angleDegrees;
+        angleRadians = Math.PI * angleDegrees / 180;
+      } else if (options && options.angleRadians) {
+        angleRadians = options.angleRadians;
+        angleDegrees = 180 * angleRadians / Math.PI;
+      } else {
+        angleRadians = 0;
+        angleDegrees = 0;
+      }
+      if (options && options.angularVelRadians) {
+        angularVelRadians = options.angularVelRadians;
+        angularVelDegrees = 180 * angularVelRadians / Math.PI;
+      } else if (options && options.angularVelDegrees) {
+        angularVelDegrees = options.angularVelDegrees;
+        angularVelRadians = Math.PI * angularVelDegrees / 180;
+      } else {
+        angularVelDegrees = 0;
+        angularVelRadians = 0;
+      }
+      this.easelObj.x = xPixels;
+      this.easelObj.y = yPixels;
+      this.easelObj.rotation = angleDegrees;
+      this.headbody.GetPosition().x = xMeters;
+      this.headbody.GetPosition().y = yMeters - this.size_torso_meters - this.size_head_meters - 0.1;
+      this.headbody.SetAngle(angleRadians);
+      this.headbody.SetAngularVelocity(angularVelRadians);
+      this.headbody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
+      this.torsobody.GetPosition().x = xMeters;
+      this.torsobody.GetPosition().y = yMeters;
+      this.torsobody.SetAngle(angleRadians);
+      this.torsobody.SetAngularVelocity(angularVelRadians);
+      this.torsobody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
+      this.lowerbodybody.GetPosition().x = xMeters;
+      this.lowerbodybody.GetPosition().y = yMeters + this.size_torso_meters + this.size_lowerbody_meters + 0.1;
+      this.lowerbodybody.SetAngle(angleRadians);
+      this.lowerbodybody.SetAngularVelocity(angularVelRadians);
+      return this.lowerbodybody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
+    };
+
+    getType = function(type) {
+      if ('dynamic' === type) {
+        return Box2D.Dynamics.b2Body.b2_dynamicBody;
+      } else if ('static' === type) {
+        return Box2D.Dynamics.b2Body.b2_staticBody;
+      } else if ('kinematic' === type) {
+        return Box2D.Dynamics.b2Body.b2_kinematicBody;
+      }
+    };
+
+    return EaselBoxMonkey;
+
+  })();
+
   PIXELS_PER_METER = 30;
 
   window.EaselBoxWorld = (function() {
@@ -330,6 +497,36 @@
         }));
       }
       return _results;
+    };
+
+    EaselBoxWorld.prototype.addMonkey = function(options) {
+      var object;
+      object = new EaselBoxMonkey(options);
+      this.easelStage.addChild(object.easelObj);
+      object.headbody = this.box2dWorld.CreateBody(object.bodyDefHead);
+      object.torsobody = this.box2dWorld.CreateBody(object.bodyDefTorso);
+      object.lowerbodybody = this.box2dWorld.CreateBody(object.bodyDefLowerbody);
+      object.headbody.CreateFixture(object.fixDefHead);
+      object.torsobody.CreateFixture(object.fixDefTorso);
+      object.lowerbodybody.CreateFixture(object.fixDefLowerbody);
+      object.setType('static');
+      object.setState(options);
+      this.objects.push(object);
+      object.headtorsoweldJointDef.Initialize(object.headbody, object.torsobody, object.headbody.GetWorldCenter());
+      object.torsolowerbodyweldJointDef.Initialize(object.torsobody, object.lowerbodybody, object.lowerbodybody.GetWorldCenter());
+      this.box2dWorld.CreateJoint(object.headtorsoweldJointDef);
+      this.box2dWorld.CreateJoint(object.torsolowerbodyweldJointDef);
+      return object;
+    };
+
+    EaselBoxWorld.prototype.addArrow = function(options) {
+      var object;
+      object = new EaselBoxArrow(options);
+      this.easelStage.addChild(object.easelObj);
+      object.arrowbody.CreateFixture(object.arrowbodyFixDef);
+      object.arrowhead.CreateFixture(object.arrowheadFixDef);
+      object.setType;
+      return object;
     };
 
     EaselBoxWorld.prototype.addEntity = function(options) {

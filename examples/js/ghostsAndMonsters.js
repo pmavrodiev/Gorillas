@@ -27,7 +27,7 @@
     };
 
     function GhostsAndMonstersGame(canvas, debugCanvas, statsCanvas) {
-      var g, groundLevelPixels, initHeadXPixels, worldHeightPixels, worldWidthPixels;
+      var g;
       g = new Graphics();
       this.world = new EaselBoxWorld(this, frameRate, canvas, debugCanvas, gravityX, gravityY, PIXELS_PER_METER);
       this.world.addLandscape({
@@ -38,138 +38,39 @@
         vertical_offset: canvas.height - 150,
         type: 'static'
       });
+      this.monkey1 = this.world.addMonkey({
+        imgSrc: '/img/gorilla_left.png',
+        scaleX: 0.3,
+        scaleY: 0.3,
+        size_head: 15,
+        size_torso: 20,
+        size_lowerbody: 22,
+        density: 2,
+        friction: 0.8,
+        restitution: 0.3,
+        xPixels: 25,
+        yPixels: 300,
+        regX: 60,
+        regY: 190
+      });
+      this.monkey2 = this.world.addMonkey({
+        imgSrc: '/img/gorilla_right.png',
+        scaleX: 0.3,
+        scaleY: 0.3,
+        size_head: 15,
+        size_torso: 20,
+        size_lowerbody: 22,
+        density: 2,
+        friction: 0.8,
+        restitution: 0.3,
+        xPixels: 745,
+        yPixels: 300,
+        regX: 230,
+        regY: 190
+      });
       this.stats = new Stats();
       statsCanvas.appendChild(this.stats.domElement);
-      worldWidthPixels = canvas.width;
-      worldHeightPixels = canvas.height;
-      initHeadXPixels = 140;
-      groundLevelPixels = worldHeightPixels - (37 / 2);
-      /*
-          ground = @world.addEntity(
-            widthPixels: 1540,
-            heightPixels: 37,
-            imgSrc: '/img/ground-cropped.png',
-            type: 'static',
-            xPixels: 0, 
-            yPixels: groundLevelPixels)      
-          
-          # setup head
-          @head = @world.addEntity(
-            radiusPixels: 20,
-            imgSrc: '/img/mz.png',
-            type: 'static',
-            xPixels: initHeadXPixels, 
-            yPixels: groundLevelPixels - 140,
-            motionRadiusPixels = 100
-            ) 
-       
-          @head.selected = false
-          @head.easelObj.onPress = (eventPress) =>
-            @head.selected = true
-            #@head.initPositionXpixels = eventPress.stageX
-            #@head.initPositionYpixels = eventPress.stageY
-            @head.initPositionXpixels = initHeadXPixels
-            @head.initPositionYpixels = groundLevelPixels - 140
-           
-            
-            eventPress.onMouseMove = (event) =>
-              #are on the left side of the bounding circle?
-               if Math.pow(event.stageX-@head.initPositionXpixels,2)+Math.pow(event.stageY-@head.initPositionYpixels,2) <= Math.pow(motionRadiusPixels,2)
-                  deltaX = event.stageX-@head.initPositionXpixels
-                  if (deltaX <=0)
-                    @head.setState(xPixels: event.stageX, yPixels: event.stageY)  
-          
-            eventPress.onMouseUp = (event) =>
-              @head.selected = false
-              @head.setType "dynamic"
-              #helpful function
-              sgn = (x) ->
-                if x>0 
-                  1 
-                else if x<0  
-                  -1
-                else  
-                  0   
-              
-              #alert("x origin "+@head.initPositionXpixels)
-              #alert("y origin "+@head.initPositionYpixels)
-              #alert("x event " + event.stageX)
-              #alert("y event " + event.stageY)
-              #are we inside the bounding circle?
-              deltaX = event.stageX-@head.initPositionXpixels
-              deltaY = event.stageY-@head.initPositionYpixels
-              if Math.pow(deltaX,2)+Math.pow(deltaY,2) > Math.pow(motionRadiusPixels,2)
-                #the angle of the mouseup point with the x-axis          
-                theta=Math.atan(Math.abs(deltaY/deltaX))          
-                #alert("angle "+ theta*180/Math.PI + " degrees")
-                
-                
-                event.stageX=Math.cos(theta)*motionRadiusPixels*sgn(deltaX)+@head.initPositionXpixels
-                event.stageY=Math.sin(theta)*motionRadiusPixels*sgn(deltaY)+@head.initPositionYpixels
-                #bound to left semi-circle
-                event.stageX = Math.min(event.stageX,@head.initPositionXpixels)
-              #alert("x event post " + event.stageX)
-              #alert("y event post " + event.stageY)  
-              forceX = (@head.initPositionXpixels - event.stageX) * forceMultiplier
-              forceY = (@head.initPositionYpixels - event.stageY) * forceMultiplier
-              @head.body.ApplyImpulse(
-                @world.vector(forceX, forceY),
-                @world.vector(@head.body.GetPosition().x, @head.body.GetPosition().y)
-              )
-       
-          # draw pyramid    
-          @drawPyramid(groundLevelPixels)
-      */
-
     }
-
-    GhostsAndMonstersGame.prototype.drawPyramid = function(groundLevelPixels) {
-      var blockHeight, blockWidth, ghost, i, j, leftPyamid, levels, myBlock, topOfPyramid, x, y, _i, _results;
-      blockWidth = 15;
-      blockHeight = 60;
-      leftPyamid = 500;
-      levels = 4;
-      topOfPyramid = groundLevelPixels - levels * (blockHeight + blockWidth) + 26;
-      _results = [];
-      for (i = _i = 0; 0 <= levels ? _i < levels : _i > levels; i = 0 <= levels ? ++_i : --_i) {
-        _results.push((function() {
-          var _j, _ref, _results1;
-          _results1 = [];
-          for (j = _j = 0, _ref = i + 1; 0 <= _ref ? _j <= _ref : _j >= _ref; j = 0 <= _ref ? ++_j : --_j) {
-            x = leftPyamid + (j - i / 2) * blockHeight;
-            y = topOfPyramid + i * (blockHeight + blockWidth);
-            myBlock = this.world.addEntity({
-              widthPixels: blockWidth,
-              heightPixels: blockHeight,
-              imgSrc: '/img/block1_15x60.png',
-              xPixels: x,
-              yPixels: y
-            });
-            if (j <= i) {
-              myBlock = this.world.addEntity({
-                widthPixels: blockWidth,
-                heightPixels: blockHeight,
-                imgSrc: '/img/block1_15x60.png',
-                xPixels: x + blockHeight / 2,
-                yPixels: y - (blockHeight + blockWidth) / 2,
-                angleDegrees: 90
-              });
-              _results1.push(ghost = this.world.addEntity({
-                widthPixels: 30,
-                heightPixels: 36,
-                imgSrc: '/img/enemy.png',
-                xPixels: x + (blockHeight / 2),
-                yPixels: y + 11
-              }));
-            } else {
-              _results1.push(void 0);
-            }
-          }
-          return _results1;
-        }).call(this));
-      }
-      return _results;
-    };
 
     GhostsAndMonstersGame.prototype.tick = function() {
       return this.stats.update();
