@@ -68,6 +68,37 @@ class window.GhostsAndMonstersGame
       regY:190
     ) 
     
+    @arrow = @world.addArrow(
+      xPixels: 100,
+      yPixels:100
+      #6 points: format: [x1,y1,x2,y2,x3,y3,x4,y4,x5,y5]
+      ###
+      The arrow is sketched below. Lettered points are the ones actually drawn in alphabetical order(i.e. A-F)
+      The X-es are shown for illustration only. 
+      Coordinates are A = (x1,y1), B = (x2,y2) and so on. The last point is F = (x6,y6) 
+                                                 E
+                                                 D    X
+                                       X                 X
+                             X                              X
+                   X                                           X    
+       A                                                          F    
+                   X                                           X    
+                             X                              X           
+                                       X                 X  
+                                                 B   X
+                                                 C
+                                            
+       
+       
+      ###
+      shape_coordinates: [100,100,
+                          170,110,
+                          170,115,
+                          170,90
+                          170,85,
+                          190,100],
+      rotation: 45
+    )
     
     
     
@@ -79,9 +110,7 @@ class window.GhostsAndMonstersGame
    
   # optional: a callback for each EaselBox2dWorld tick()
   tick: () ->
-    #@monkey1.ApplyForce(@world.box2dWorld.GetGravity()); 
-  
-  
+    #@monkey1.ApplyForce(@world.box2dWorld.GetGravity());  
     @stats.update()
     
                   

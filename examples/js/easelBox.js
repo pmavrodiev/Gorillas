@@ -276,11 +276,18 @@
       this.headtorsoweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
       this.torsolowerbodyweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
       this.easelObj.onPress = function(eventPress) {
+        _this.easelObj.pressedX = eventPress.stageX;
+        _this.easelObj.pressedY = eventPress.stageY;
         return eventPress.onMouseMove = function(event) {
-          return _this.setState({
-            xPixels: event.stageX,
-            yPixels: event.stageY
+          var deltaX, deltaY;
+          deltaX = event.stageX - _this.easelObj.pressedX;
+          deltaY = event.stageY - _this.easelObj.pressedY;
+          _this.setState({
+            xPixels: _this.easelObj.x + deltaX,
+            yPixels: _this.easelObj.y + deltaY
           });
+          _this.easelObj.pressedX = event.stageX;
+          return _this.easelObj.pressedY = event.stageY;
         };
       };
     }
@@ -396,6 +403,182 @@
     };
 
     return EaselBoxMonkey;
+
+  })();
+
+  window.EaselBoxArrow = (function() {
+    var getType;
+
+    function EaselBoxArrow(options) {
+      var _this = this;
+      this.x1 = options.shape_coordinates[0];
+      this.y1 = options.shape_coordinates[1];
+      this.x2 = options.shape_coordinates[2];
+      this.y2 = options.shape_coordinates[3];
+      this.x3 = options.shape_coordinates[4];
+      this.y3 = options.shape_coordinates[5];
+      this.x4 = options.shape_coordinates[6];
+      this.y4 = options.shape_coordinates[7];
+      this.x5 = options.shape_coordinates[8];
+      this.y5 = options.shape_coordinates[9];
+      this.x6 = options.shape_coordinates[10];
+      this.y6 = options.shape_coordinates[11];
+      this.rotation = options.rotation | 0;
+      if (options.imgSrc) {
+        this.easelObj = new Bitmap(options.imgSrc);
+      } else {
+        this.easelObj = new Shape();
+        this.easelObj.REGX = 0;
+        this.easelObj.REGY = 0;
+        this.drawme();
+      }
+      this.easelObj.onPress = function(eventPress) {
+        _this.rotateme(30);
+        eventPress.onMouseMove = function(event) {};
+        return eventPress.onMouseUp = function(event) {};
+      };
+    }
+
+    EaselBoxArrow.prototype.drawme = function(xPixels, yPixels) {
+      this.easelObj.regX = this.easelObj.REGX;
+      this.easelObj.regY = this.easelObj.REGY;
+      console.log(this.x1 + ":" + this.y1 + ":" + this.x2 + ":" + this.y2 + ":" + this.x3 + ":" + this.y3 + ":" + this.x4 + ":" + this.y4 + ":" + this.x5 + ":" + this.y5 + ":" + this.x6 + ":" + this.y6);
+      this.easelObj.graphics.clear();
+      this.easelObj.graphics.beginFill("pink");
+      this.easelObj.graphics.moveTo(this.x1, this.y1);
+      this.easelObj.graphics.lineTo(this.x2, this.y2);
+      this.easelObj.graphics.lineTo(this.x3, this.y3);
+      this.easelObj.graphics.lineTo(this.x4, this.y4);
+      this.easelObj.graphics.lineTo(this.x5, this.y5);
+      this.easelObj.graphics.lineTo(this.x6, this.y6);
+      this.easelObj.graphics.lineTo(this.x3, this.y3);
+      this.easelObj.graphics.lineTo(this.x4, this.y4);
+      this.easelObj.graphics.lineTo(this.x1, this.y1);
+      return this.easelObj.setTransform(this.rotation);
+    };
+
+    EaselBoxArrow.prototype.rotateme = function(angleDegrees) {
+      var computePointRotation, x2rotated, x3rotated, x4rotated, x5rotated, x6rotated;
+      computePointRotation = function(x, y, x1, y1, angleDegrees) {
+        var A, B, M, N, P, Z, point;
+        point = (function() {
+
+          function point() {
+            this.x = 0;
+            this.y = 0;
+          }
+
+          return point;
+
+        })();
+        A = Math.pow(x - x1, 2) + Math.pow(y1 - y, 2);
+        B = 4 * Math.pow(Math.sin((angleDegrees / 2) * Math.PI / 180), 2) * A;
+        M = -(B + y1 * y1 - y * y - A - Math.pow(x - x1, 2)) / 2;
+        Z = 2 * y1 * Math.pow(x - x1, 2) + 2 * M * (y - y1);
+        N = A * Math.pow(x - x1, 2) - M * M;
+        P = N - y1 * y1 * Math.pow(x - x1, 2);
+        point = new Point();
+        point.y = (Z - Math.sqrt(Math.pow(Z, 2) + 4 * A * P)) / (2 * A);
+        point.x = x1 + Math.sqrt(A - Math.pow(y1 - point.y, 2));
+        return point;
+      };
+      x2rotated = computePointRotation(this.x2, this.y2, this.x1, this.y1, angleDegrees);
+      x3rotated = computePointRotation(this.x3, this.y3, this.x1, this.y1, angleDegrees);
+      x4rotated = computePointRotation(this.x4, this.y4, this.x1, this.y1, angleDegrees);
+      x5rotated = computePointRotation(this.x5, this.y5, this.x1, this.y1, angleDegrees);
+      x6rotated = computePointRotation(this.x6, this.y6, this.x1, this.y1, angleDegrees);
+      this.x2 = x2rotated.x;
+      this.y2 = x2rotated.y;
+      this.x3 = x3rotated.x;
+      this.y3 = x3rotated.y;
+      this.x4 = x4rotated.x;
+      this.y4 = x4rotated.y;
+      this.x5 = x5rotated.x;
+      this.y5 = x5rotated.y;
+      this.x6 = x6rotated.x;
+      this.y6 = x6rotated.y;
+      console.log(this.x1 + ":" + this.y1 + ":" + this.x2 + ":" + this.y2 + ":" + this.x3 + ":" + this.y3 + ":" + this.x4 + ":" + this.y4 + ":" + this.x5 + ":" + this.y5 + ":" + this.x6 + ":" + this.y6);
+      return this.drawme();
+    };
+
+    EaselBoxArrow.prototype.update = function() {
+      this.easelObj.x = this.easelObj.x;
+      this.easelObj.y = this.easelObj.y;
+      return this.easelObj.rotation = this.easelObj.rotation;
+    };
+
+    EaselBoxArrow.prototype.setType = function(type) {};
+
+    EaselBoxArrow.prototype.setState = function(options) {
+      var angleDegrees, angleRadians, angularVelDegrees, angularVelRadians, xMeters, xPixels, xVelMeters, xVelPixels, yMeters, yPixels, yVelMeters, yVelPixels;
+      if (options && options.xPixels) {
+        xPixels = options.xPixels;
+        xMeters = xPixels / PIXELS_PER_METER;
+      } else if (options && options.Xmeters) {
+        xMeters = options.Xmeters;
+        xPixels = xMeters * PIXELS_PER_METER;
+      } else {
+        xMeters = 0;
+        xPixels = 0;
+      }
+      if (options && options.yPixels) {
+        yPixels = options.yPixels;
+        yMeters = yPixels / PIXELS_PER_METER;
+      } else if (options && options.Xmeters) {
+        yMeters = options.Ymeters;
+        yPixels = YMeters * PIXELS_PER_METER;
+      } else {
+        yMeters = 0;
+        yPixels = 0;
+      }
+      if (options && options.xVelPixels) {
+        xVelPixels = options.xVelPixels;
+        xVelMeters = xVelPixels / PIXELS_PER_METER;
+      } else if (options && options.xVelMeters) {
+        xVelMeters = options.xVelMeters;
+        xVelPixels = xVelMeters * PIXELS_PER_METER;
+      } else {
+        xVelMeters = 0;
+        xVelPixels = 0;
+      }
+      if (options && options.yVelPixels) {
+        yVelPixels = options.yVelPixels;
+        yVelMeters = yVelPixels / PIXELS_PER_METER;
+      } else if (options && options.yVelMeters) {
+        yVelMeters = options.yVelMeters;
+        yVelPixels = yVelMeters * PIXELS_PER_METER;
+      } else {
+        yVelMeters = 0;
+        yVelPixels = 0;
+      }
+      if (options && options.angleDegrees) {
+        angleDegrees = options.angleDegrees;
+        angleRadians = Math.PI * angleDegrees / 180;
+      } else if (options && options.angleRadians) {
+        angleRadians = options.angleRadians;
+        angleDegrees = 180 * angleRadians / Math.PI;
+      } else {
+        angleRadians = 0;
+        angleDegrees = 0;
+      }
+      if (options && options.angularVelRadians) {
+        angularVelRadians = options.angularVelRadians;
+        angularVelDegrees = 180 * angularVelRadians / Math.PI;
+      } else if (options && options.angularVelDegrees) {
+        angularVelDegrees = options.angularVelDegrees;
+        angularVelRadians = Math.PI * angularVelDegrees / 180;
+      } else {
+        angularVelDegrees = 0;
+        angularVelRadians = 0;
+      }
+      this.easelObj.x = xPixels;
+      this.easelObj.y = yPixels;
+      return this.easelObj.rotation = angleDegrees;
+    };
+
+    getType = function(type) {};
+
+    return EaselBoxArrow;
 
   })();
 
@@ -523,9 +706,8 @@
       var object;
       object = new EaselBoxArrow(options);
       this.easelStage.addChild(object.easelObj);
-      object.arrowbody.CreateFixture(object.arrowbodyFixDef);
-      object.arrowhead.CreateFixture(object.arrowheadFixDef);
-      object.setType;
+      object.setState(options);
+      this.objects.push(object);
       return object;
     };
 

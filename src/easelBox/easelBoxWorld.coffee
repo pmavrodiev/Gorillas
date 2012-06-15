@@ -126,10 +126,12 @@ class window.EaselBoxWorld
     #add to canvas
     @easelStage.addChild object.easelObj
     #create the actual Box2D bodies
-    object.arrowbody.CreateFixture(object.arrowbodyFixDef)
-    object.arrowhead.CreateFixture(object.arrowheadFixDef)
-    object.setType
-    
+    #object.arrowbody.CreateFixture(object.arrowbodyFixDef)
+    #object.arrowhead.CreateFixture(object.arrowheadFixDef)
+    #object.setType
+    object.setState(options)
+    @objects.push(object) 
+  
     
     return object  
   

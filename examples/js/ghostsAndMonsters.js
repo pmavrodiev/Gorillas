@@ -68,6 +68,29 @@
         regX: 230,
         regY: 190
       });
+      this.arrow = this.world.addArrow({
+        xPixels: 100,
+        yPixels: 100,
+        /*
+              The arrow is sketched below. Lettered points are the ones actually drawn in alphabetical order(i.e. A-F)
+              The X-es are shown for illustration only. 
+              Coordinates are A = (x1,y1), B = (x2,y2) and so on. The last point is F = (x6,y6) 
+                                                         E
+                                                         D    X
+                                               X                 X
+                                     X                              X
+                           X                                           X    
+               A                                                          F    
+                           X                                           X    
+                                     X                              X           
+                                               X                 X  
+                                                         B   X
+                                                         C
+        */
+
+        shape_coordinates: [100, 100, 170, 110, 170, 115, 170, 90, 170, 85, 190, 100],
+        rotation: 45
+      });
       this.stats = new Stats();
       statsCanvas.appendChild(this.stats.domElement);
     }

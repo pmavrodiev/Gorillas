@@ -61,9 +61,15 @@ class window.EaselBoxMonkey
             
     @easelObj.onPress = (eventPress) =>
       #@setState(xPixels: eventPress.stageX, yPixels: eventPress.stageY)
-     
+      @easelObj.pressedX = eventPress.stageX
+      @easelObj.pressedY = eventPress.stageY
+      
       eventPress.onMouseMove = (event) =>
-        @setState(xPixels: event.stageX, yPixels: event.stageY)  
+        deltaX = event.stageX - @easelObj.pressedX
+        deltaY = event.stageY - @easelObj.pressedY
+        @setState(xPixels: @easelObj.x+deltaX, yPixels: @easelObj.y+deltaY)
+        @easelObj.pressedX = event.stageX
+        @easelObj.pressedY = event.stageY
          
 
   # update canvas position based on the physical position of the torso!
