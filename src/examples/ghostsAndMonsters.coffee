@@ -8,16 +8,33 @@ class window.GhostsAndMonstersGame
   forceMultiplier = 5 
   
   $(document).ready -> 
-    canvas = document.getElementById('easelCanvas')
-    debugCanvas = document.getElementById('debugCanvas')
-    statsCanvas = document.getElementById('stats')
-    new GhostsAndMonstersGame(canvas, debugCanvas, statsCanvas);
+     canvas = document.getElementById('easelCanvas')
+     debugCanvas = document.getElementById('debugCanvas')
+     statsCanvas = document.getElementById('stats')
+     pw = canvas.parentNode.clientWidth
+     ph = canvas.parentNode.clientHeight
+     canvas.height = pw * 0.9 * (canvas.height/canvas.width)  
+     canvas.width = pw * 0.9
+     canvas.style.top = (ph-canvas.height)/2 + "px"
+     canvas.style.left = (pw-canvas.width)/2 + "px"
+     debugCanvas.height = pw * 0.9 * (debugCanvas.height/debugCanvas.width)  
+     debugCanvas.width = pw * 0.9
+     debugCanvas.style.top = (ph-debugCanvas.height)/2 + "px"
+     debugCanvas.style.left = (pw-debugCanvas.width)/2 + "px"    
+     new GhostsAndMonstersGame(canvas, debugCanvas, statsCanvas)
   
   reset: () ->
-    alert(window.innerWidth)
+    alert(window.height)
     
   constructor: (canvas, debugCanvas, statsCanvas) ->
-    g = new Graphics()    
+   #init easeljs content
+    #@imgLeftGorillaBreath = new Image()
+    #@imgLeftGorillaBreath.onload = handleImageLoad
+    #@imgLeftGorillaBreath.onerror = handleImageError
+    #@imgLeftGorillaBreath.src = "/img/breath.png"
+    g = new Graphics()
+    
+    
     @world = new EaselBoxWorld(this, frameRate, canvas, debugCanvas, gravityX, gravityY, PIXELS_PER_METER)
     
     @world.addLandscape(
@@ -25,14 +42,18 @@ class window.GhostsAndMonstersGame
       height:canvas.height,
       iterations:8,
       smoothness:0.05,
-      vertical_offset: canvas.height-150
+      vertical_offset: canvas.height*0.75
       type: 'static'
     )
     
     @monkey1 = @world.addMonkey(
-      imgSrc: '/img/gorilla_left.png',
-      scaleX: 0.3,
-      scaleY: 0.3,
+      SpriteSheet:  new SpriteSheet(
+        images: ["/img/BREATH/left_breath1-resized.png","/img/BREATH/left_breath2-resized.png","/img/BREATH/left_breath3-resized.png","/img/BREATH/left_breath4-resized.png"],
+        frames: {width:308,height:308}
+        animations: {standby:[0,3,"standby",5]}      
+        ),     
+      scaleX: 0.4,
+      scaleY: 0.4,
       #sizes (=half the side length of the respective square) in pixels. 
       #Coordinates of the body parts are relative to the location of the torso
       size_head:      15,
@@ -47,12 +68,16 @@ class window.GhostsAndMonstersGame
       regX: 60,
       regY: 190
     ) 
+  
     
-   
     @monkey2 = @world.addMonkey(
-      imgSrc: '/img/gorilla_right.png',
-      scaleX: 0.3,
-      scaleY: 0.3,
+      SpriteSheet:  new SpriteSheet(
+        images: ["/img/BREATH/right_breath1-resized.png","/img/BREATH/right_breath2-resized.png","/img/BREATH/right_breath3-resized.png","/img/BREATH/right_breath4-resized.png"],
+        frames: {width:308,height:308}
+        animations: {standby:[0,3,"standby",5]}      
+        ),  
+      scaleX: 0.4,
+      scaleY: 0.4,
       #sizes (=half the side length of the respective square) in pixels. 
       #Coordinates of the body parts are relative to the location of the torso
       size_head:      15,

@@ -205,12 +205,6 @@
     function EaselBoxLandscapeRectangle(options) {
       var box2dShape, hillVector, object, x1, x2, x3, x4, y1, y2, y3, y4;
       object = new Shape();
-      object.graphics.beginStroke("blue");
-      object.graphics.setStrokeStyle(1);
-      object.graphics.moveTo(options.bottom_left_corner.x, options.bottom_left_corner.y);
-      object.graphics.lineTo(options.top_left_corner.x, options.top_left_corner.y);
-      object.graphics.lineTo(options.top_right_corner.x, options.top_right_corner.y);
-      object.graphics.lineTo(options.bottom_right_corner.x, options.bottom_right_corner.y);
       hillVector = new Vector(4);
       x1 = options.bottom_left_corner.x / PIXELS_PER_METER;
       y1 = options.bottom_left_corner.y / PIXELS_PER_METER;
@@ -238,7 +232,12 @@
     function EaselBoxMonkey(options) {
       var density, friction, restitution,
         _this = this;
-      this.easelObj = new Bitmap(options.imgSrc);
+      this.spriteSheet = options.SpriteSheet;
+      this.bmpAnimationStandBy = new BitmapAnimation(this.spriteSheet);
+      this.bmpAnimationStandBy.gotoAndPlay("standby");
+      this.bmpAnimationStandBy.name = "monkey_idle";
+      this.bmpAnimationStandBy.currentFrame = 0;
+      this.easelObj = this.bmpAnimationStandBy;
       this.easelObj.regX = options.regX;
       this.easelObj.regY = options.regY;
       this.easelObj.scaleX = options.scaleX;
@@ -609,7 +608,7 @@
     }
 
     EaselBoxWorld.prototype.addLandscape = function(options) {
-      var bound, firstElement, height, height_offset, i, iter, iterations, left_idx, max, max_width, midpoint_index, midpoint_x, midpoint_y, min, min_width, queue, r, right_idx, ticks, tinyRectangle, vpoints_vector, x1, x2, y1, y2, _i, _ref, _results;
+      var bound, firstElement, flatLand, height, height_offset, i, img, iter, iterations, left_idx, max, max_width, midpoint_index, midpoint_x, midpoint_y, min, min_width, object, queue, r, right_idx, ticks, tinyRectangle, vpoints_vector, x1, x2, y1, y2, _i, _j, _ref, _ref1;
       height_offset = options.vertical_offset;
       min_width = 0;
       max_width = options.width;
@@ -627,7 +626,7 @@
         return bound;
 
       })();
-      min = -50;
+      min = -80;
       max = 50;
       ticks = Math.pow(2, iterations);
       vpoints_vector = new Array(ticks + 1);
@@ -664,22 +663,43 @@
           queue.push(new bound((right_idx + left_idx) / 2, right_idx, iter + 1));
         }
       }
-      _results = [];
+      flatLand = 18;
       for (i = _i = 0, _ref = vpoints_vector.length - 2; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
         x1 = vpoints_vector[i][0];
         x2 = vpoints_vector[i + 1][0];
         y1 = vpoints_vector[i][1];
         y2 = vpoints_vector[i + 1][1];
-        _results.push(tinyRectangle = this.addEntity({
+        if (i <= flatLand) {
+          y1 = vpoints_vector[0][1];
+          y2 = vpoints_vector[0][1];
+        }
+        tinyRectangle = this.addEntity({
           whoami: "inefficient rectangle",
           bottom_left_corner: new Box2D.Common.Math.b2Vec2(x1, height),
           top_left_corner: new Box2D.Common.Math.b2Vec2(x1, y1),
           top_right_corner: new Box2D.Common.Math.b2Vec2(x2, y2),
           bottom_right_corner: new Box2D.Common.Math.b2Vec2(x2, height),
           type: options.type
-        }));
+        });
       }
-      return _results;
+      object = new Shape();
+      img = new Image();
+      img.src = "/img/LANDSCAPE/snapshot.png";
+      object.graphics.beginBitmapFill(img);
+      object.graphics.moveTo(vpoints_vector[0][0], vpoints_vector[0][1]);
+      for (i = _j = 1, _ref1 = vpoints_vector.length - 2; 1 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 1 <= _ref1 ? ++_j : --_j) {
+        x1 = vpoints_vector[i][0];
+        x2 = vpoints_vector[i + 1][0];
+        y1 = vpoints_vector[i][1];
+        y2 = vpoints_vector[i + 1][1];
+        object.graphics.lineTo(x2, y2);
+        if (i === vpoints_vector.length - 2) {
+          object.graphics.lineTo(x2, height);
+          object.graphics.lineTo(vpoints_vector[0][0], height);
+          object.graphics.lineTo(vpoints_vector[0][0], height_offset);
+        }
+      }
+      return this.easelStage.addChild(object);
     };
 
     EaselBoxWorld.prototype.addMonkey = function(options) {

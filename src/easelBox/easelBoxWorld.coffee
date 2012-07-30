@@ -45,7 +45,7 @@ class window.EaselBoxWorld
        constructor: (min_idx,max_idx,iteration) ->
          @min_idx = min_idx; @max_idx = max_idx; @iteration = iteration
     
-    min = -50; max = 50 #random number range
+    min = -80; max = 50 #random number range
     ticks = Math.pow(2,iterations)     
     #bin_size = (max_width - min_width) / ticks
     vpoints_vector = new Array(ticks+1)
@@ -79,10 +79,16 @@ class window.EaselBoxWorld
   
     #Start creating the individual rectangles constituting the landscape
     #It sucks that the current Box2dWeb port does not have the ChainShape shape from the latest Box2D release.
-    #Now the landscape needs to be generated as a sequence of tiny rectangles, which is not neat! 
+    #Now the landscape needs to be generated as a sequence of tiny rectangles, which is not neat!
+    
+    #how much flat land should we dedicate to each gorilla?
+    flatLand=18
     for i in [0..(vpoints_vector.length-2)]
       x1 = vpoints_vector[i][0]; x2 = vpoints_vector[i+1][0]
       y1 = vpoints_vector[i][1]; y2 = vpoints_vector[i+1][1]
+      if (i <= flatLand)
+        y1=vpoints_vector[0][1]
+        y2=vpoints_vector[0][1]
       #add the actual object        
       tinyRectangle = @addEntity(
         whoami: "inefficient rectangle"
@@ -91,8 +97,29 @@ class window.EaselBoxWorld
         top_right_corner:    new Box2D.Common.Math.b2Vec2 x2,y2
         bottom_right_corner: new Box2D.Common.Math.b2Vec2 x2,height
         type: options.type
-      ) 
+      )       
+    #add the actual landscape to the canvas
+    object = new Shape()    
+    #object.graphics.beginFill("blue")
+    #object.graphics.beginStroke("blue")
+    img = new Image()
+    img.src="/img/LANDSCAPE/snapshot.png"
+    object.graphics.beginBitmapFill(img)
+    #set origin
+    object.graphics.moveTo(vpoints_vector[0][0],vpoints_vector[0][1])
+    for i in [1..(vpoints_vector.length-2)]
+      x1 = vpoints_vector[i][0]; x2 = vpoints_vector[i+1][0]
+      y1 = vpoints_vector[i][1]; y2 = vpoints_vector[i+1][1]          
+      #bottom_left to top_left
+      object.graphics.lineTo(x2,y2)
+      #now close the shape
+      if (i == vpoints_vector.length-2)       
+        object.graphics.lineTo(x2, height)  
+        object.graphics.lineTo(vpoints_vector[0][0], height)
+        object.graphics.lineTo(vpoints_vector[0][0], height_offset)
     
+  
+    @easelStage.addChild object
   
   addMonkey: (options) ->
     object = new EaselBoxMonkey(options)

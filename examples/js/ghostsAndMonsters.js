@@ -15,15 +15,25 @@
     forceMultiplier = 5;
 
     $(document).ready(function() {
-      var canvas, debugCanvas, statsCanvas;
+      var canvas, debugCanvas, ph, pw, statsCanvas;
       canvas = document.getElementById('easelCanvas');
       debugCanvas = document.getElementById('debugCanvas');
       statsCanvas = document.getElementById('stats');
+      pw = canvas.parentNode.clientWidth;
+      ph = canvas.parentNode.clientHeight;
+      canvas.height = pw * 0.9 * (canvas.height / canvas.width);
+      canvas.width = pw * 0.9;
+      canvas.style.top = (ph - canvas.height) / 2 + "px";
+      canvas.style.left = (pw - canvas.width) / 2 + "px";
+      debugCanvas.height = pw * 0.9 * (debugCanvas.height / debugCanvas.width);
+      debugCanvas.width = pw * 0.9;
+      debugCanvas.style.top = (ph - debugCanvas.height) / 2 + "px";
+      debugCanvas.style.left = (pw - debugCanvas.width) / 2 + "px";
       return new GhostsAndMonstersGame(canvas, debugCanvas, statsCanvas);
     });
 
     GhostsAndMonstersGame.prototype.reset = function() {
-      return alert(window.innerWidth);
+      return alert(window.height);
     };
 
     function GhostsAndMonstersGame(canvas, debugCanvas, statsCanvas) {
@@ -35,13 +45,22 @@
         height: canvas.height,
         iterations: 8,
         smoothness: 0.05,
-        vertical_offset: canvas.height - 150,
+        vertical_offset: canvas.height * 0.75,
         type: 'static'
       });
       this.monkey1 = this.world.addMonkey({
-        imgSrc: '/img/gorilla_left.png',
-        scaleX: 0.3,
-        scaleY: 0.3,
+        SpriteSheet: new SpriteSheet({
+          images: ["/img/BREATH/left_breath1-resized.png", "/img/BREATH/left_breath2-resized.png", "/img/BREATH/left_breath3-resized.png", "/img/BREATH/left_breath4-resized.png"],
+          frames: {
+            width: 308,
+            height: 308
+          },
+          animations: {
+            standby: [0, 3, "standby", 5]
+          }
+        }),
+        scaleX: 0.4,
+        scaleY: 0.4,
         size_head: 15,
         size_torso: 20,
         size_lowerbody: 22,
@@ -54,9 +73,18 @@
         regY: 190
       });
       this.monkey2 = this.world.addMonkey({
-        imgSrc: '/img/gorilla_right.png',
-        scaleX: 0.3,
-        scaleY: 0.3,
+        SpriteSheet: new SpriteSheet({
+          images: ["/img/BREATH/right_breath1-resized.png", "/img/BREATH/right_breath2-resized.png", "/img/BREATH/right_breath3-resized.png", "/img/BREATH/right_breath4-resized.png"],
+          frames: {
+            width: 308,
+            height: 308
+          },
+          animations: {
+            standby: [0, 3, "standby", 5]
+          }
+        }),
+        scaleX: 0.4,
+        scaleY: 0.4,
         size_head: 15,
         size_torso: 20,
         size_lowerbody: 22,

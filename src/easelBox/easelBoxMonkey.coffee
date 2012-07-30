@@ -1,8 +1,17 @@
 class window.EaselBoxMonkey
 
   constructor: (options) ->
+    #CREATE SPRITESHEET AND ASSIGN THE ASSOCIATE DATA
+    @spriteSheet = options.SpriteSheet
+    @bmpAnimationStandBy = new BitmapAnimation(@spriteSheet)
+    @bmpAnimationStandBy.gotoAndPlay("standby")
+    @bmpAnimationStandBy.name = "monkey_idle"    
+    @bmpAnimationStandBy.currentFrame = 0
+    
+  
     #INIT THE EASEL SHAPE
-    @easelObj = new Bitmap(options.imgSrc)
+    @easelObj= @bmpAnimationStandBy
+    #@easelObj = new Bitmap(options.imgSrc)
     @easelObj.regX = options.regX
     @easelObj.regY = options.regY
     @easelObj.scaleX = options.scaleX
