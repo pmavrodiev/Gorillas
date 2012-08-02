@@ -1,17 +1,15 @@
 class window.EaselBoxMonkey
 
   constructor: (options) ->
+    #INIT THE EASEL SHAPE
     #CREATE SPRITESHEET AND ASSIGN THE ASSOCIATE DATA
     @spriteSheet = options.SpriteSheet
-    @bmpAnimationStandBy = new BitmapAnimation(@spriteSheet)
-    @bmpAnimationStandBy.gotoAndPlay("standby")
-    @bmpAnimationStandBy.name = "monkey_idle"    
-    @bmpAnimationStandBy.currentFrame = 0
-    
-  
-    #INIT THE EASEL SHAPE
-    @easelObj= @bmpAnimationStandBy
-    #@easelObj = new Bitmap(options.imgSrc)
+    @easelObj = new BitmapAnimation(@spriteSheet)
+    @easelObj.gotoAndPlay("standby")
+    @easelObj.name = "monkey_idle"    
+    @easelObj.currentFrame = 0       
+    @easelObj.x = options.xPixels
+    @easelObj.y = options.yPixels
     @easelObj.regX = options.regX
     @easelObj.regY = options.regY
     @easelObj.scaleX = options.scaleX
@@ -67,19 +65,18 @@ class window.EaselBoxMonkey
     @torsolowerbodyweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef()
     
     
-            
+    ###        
     @easelObj.onPress = (eventPress) =>
       #@setState(xPixels: eventPress.stageX, yPixels: eventPress.stageY)
       @easelObj.pressedX = eventPress.stageX
-      @easelObj.pressedY = eventPress.stageY
-      
+      @easelObj.pressedY = eventPress.stageY      
       eventPress.onMouseMove = (event) =>
         deltaX = event.stageX - @easelObj.pressedX
         deltaY = event.stageY - @easelObj.pressedY
         @setState(xPixels: @easelObj.x+deltaX, yPixels: @easelObj.y+deltaY)
         @easelObj.pressedX = event.stageX
         @easelObj.pressedY = event.stageY
-         
+    ###     
 
   # update canvas position based on the physical position of the torso!
   update: ->

@@ -242,7 +242,7 @@ canvas {
   width:1600px;
   height:1000px;
   */
-  background-color: #FDF5E6;
+  background-color: black/*#95CEDF*/;
   /*make canvases unselectable*/ 
   -moz-user-select: -moz-none;
   -khtml-user-select: none;

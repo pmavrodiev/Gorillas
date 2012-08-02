@@ -27,14 +27,8 @@ class window.GhostsAndMonstersGame
     alert(window.height)
     
   constructor: (canvas, debugCanvas, statsCanvas) ->
-   #init easeljs content
-    #@imgLeftGorillaBreath = new Image()
-    #@imgLeftGorillaBreath.onload = handleImageLoad
-    #@imgLeftGorillaBreath.onerror = handleImageError
-    #@imgLeftGorillaBreath.src = "/img/breath.png"
-    g = new Graphics()
-    
-    
+    @voffset = canvas.height*0.85
+   
     @world = new EaselBoxWorld(this, frameRate, canvas, debugCanvas, gravityX, gravityY, PIXELS_PER_METER)
     
     @world.addLandscape(
@@ -42,7 +36,7 @@ class window.GhostsAndMonstersGame
       height:canvas.height,
       iterations:8,
       smoothness:0.05,
-      vertical_offset: canvas.height*0.75
+      vertical_offset:  @voffset
       type: 'static'
     )
     
@@ -52,8 +46,8 @@ class window.GhostsAndMonstersGame
         frames: {width:308,height:308}
         animations: {standby:[0,3,"standby",5]}      
         ),     
-      scaleX: 0.4,
-      scaleY: 0.4,
+      scaleX: 0.5,
+      scaleY: 0.5,
       #sizes (=half the side length of the respective square) in pixels. 
       #Coordinates of the body parts are relative to the location of the torso
       size_head:      15,
@@ -63,10 +57,11 @@ class window.GhostsAndMonstersGame
       friction: 0.8,
       restitution: 0.3,
       #location of the torso's center in pixels
-      xPixels: 25, 
-      yPixels: 300,
-      regX: 60,
-      regY: 190
+      xPixels: 60, 
+      yPixels: @voffset-20-22*2, #@voffset - size_torso-2*size_lowerbody
+      #for the easel object. set these to half the dimnesions of the png 
+      regX: 308/2,
+      regY: 308/2+20
     ) 
   
     
@@ -76,8 +71,8 @@ class window.GhostsAndMonstersGame
         frames: {width:308,height:308}
         animations: {standby:[0,3,"standby",5]}      
         ),  
-      scaleX: 0.4,
-      scaleY: 0.4,
+      scaleX: 0.5,
+      scaleY: 0.5,
       #sizes (=half the side length of the respective square) in pixels. 
       #Coordinates of the body parts are relative to the location of the torso
       size_head:      15,
@@ -87,55 +82,69 @@ class window.GhostsAndMonstersGame
       friction: 0.8,
       restitution: 0.3,
       #location of the torso's center in pixels
-      xPixels: 745, 
-      yPixels: 300,
-      regX:230,
-      regY:190
+      xPixels: canvas.width-22-38, 
+      yPixels: @voffset-20-22*2,
+      regX:308/2,
+      regY:308/2+20
     ) 
-    
-    @arrow = @world.addArrow(
-      xPixels: 100,
-      yPixels:100
-      #6 points: format: [x1,y1,x2,y2,x3,y3,x4,y4,x5,y5]
-      ###
-      The arrow is sketched below. Lettered points are the ones actually drawn in alphabetical order(i.e. A-F)
-      The X-es are shown for illustration only. 
-      Coordinates are A = (x1,y1), B = (x2,y2) and so on. The last point is F = (x6,y6) 
-                                                 E
-                                                 D    X
-                                       X                 X
-                             X                              X
-                   X                                           X    
-       A                                                          F    
-                   X                                           X    
-                             X                              X           
-                                       X                 X  
-                                                 B   X
-                                                 C
-                                            
-       
-       
-      ###
-      shape_coordinates: [100,100,
-                          170,110,
-                          170,115,
-                          170,90
-                          170,85,
-                          190,100],
-      rotation: 45
-    )
-    
-    
-    
-    # optional: set up frame rate display
-    @stats = new Stats()
-    statsCanvas.appendChild @stats.domElement
-    
- 
    
+   
+    @bazooka = @world.addBazooka(
+      imgSrc: "/img/BAZOOKA/Bazooka.png"
+      scaleX: 1,
+      scaleY: 1,
+      density: 2,
+      friction: 0.8,
+      restitution: 0.3,
+      #dimensions of the  Box2D rectangle in pixels 
+      width: 40,
+      height: 125,
+      #the position of the easeljs object
+      xPixels: 120, 
+      yPixels: 120,       
+      regX: 25.5,
+      regY: 128-1.92,
+      angleDegrees: 0
+    ) 
+    #@arrow = @world.addArrow(
+     # xPixels: 100,
+     # yPixels:100
+      #6 points: format: [x1,y1,x2,y2,x3,y3,x4,y4,x5,y5]     
+      #The arrow is sketched below. Lettered points are the ones actually drawn in alphabetical order(i.e. A-F)
+      #The X-es are shown for illustration only. 
+      #Coordinates are A = (x1,y1), B = (x2,y2) and so on. The last point is F = (x6,y6) 
+      #                                           E
+      #                                           D    X
+      #                                 X                 X
+      #                       X                              X
+      #             X                                           X    
+      # A                                                          F    
+      #             X                                           X    
+      #                       X                              X           
+      #                                 X                 X  
+      #                                           B   X
+      #                                           C
+      #                                     
+      # 
+      #       
+      #shape_coordinates: [100,100,
+      #                    170,110,
+      #                    170,115,
+      #                    170,90
+      #                    170,85,
+      #                    190,100],
+      #rotation: 45
+      #)
+    
+    
+    ###
+    # optional: set up frame rate display
+    #@stats = new Stats()
+    #statsCanvas.appendChild @stats.domElement
+    
   # optional: a callback for each EaselBox2dWorld tick()
   tick: () ->
     #@monkey1.ApplyForce(@world.box2dWorld.GetGravity());  
-    @stats.update()
+    #@stats.update()
     
                   

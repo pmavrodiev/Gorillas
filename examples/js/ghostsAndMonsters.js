@@ -37,15 +37,14 @@
     };
 
     function GhostsAndMonstersGame(canvas, debugCanvas, statsCanvas) {
-      var g;
-      g = new Graphics();
+      this.voffset = canvas.height * 0.85;
       this.world = new EaselBoxWorld(this, frameRate, canvas, debugCanvas, gravityX, gravityY, PIXELS_PER_METER);
       this.world.addLandscape({
         width: canvas.width,
         height: canvas.height,
         iterations: 8,
         smoothness: 0.05,
-        vertical_offset: canvas.height * 0.75,
+        vertical_offset: this.voffset,
         type: 'static'
       });
       this.monkey1 = this.world.addMonkey({
@@ -59,18 +58,18 @@
             standby: [0, 3, "standby", 5]
           }
         }),
-        scaleX: 0.4,
-        scaleY: 0.4,
+        scaleX: 0.5,
+        scaleY: 0.5,
         size_head: 15,
         size_torso: 20,
         size_lowerbody: 22,
         density: 2,
         friction: 0.8,
         restitution: 0.3,
-        xPixels: 25,
-        yPixels: 300,
-        regX: 60,
-        regY: 190
+        xPixels: 60,
+        yPixels: this.voffset - 20 - 22 * 2,
+        regX: 308 / 2,
+        regY: 308 / 2 + 20
       });
       this.monkey2 = this.world.addMonkey({
         SpriteSheet: new SpriteSheet({
@@ -83,49 +82,46 @@
             standby: [0, 3, "standby", 5]
           }
         }),
-        scaleX: 0.4,
-        scaleY: 0.4,
+        scaleX: 0.5,
+        scaleY: 0.5,
         size_head: 15,
         size_torso: 20,
         size_lowerbody: 22,
         density: 2,
         friction: 0.8,
         restitution: 0.3,
-        xPixels: 745,
-        yPixels: 300,
-        regX: 230,
-        regY: 190
+        xPixels: canvas.width - 22 - 38,
+        yPixels: this.voffset - 20 - 22 * 2,
+        regX: 308 / 2,
+        regY: 308 / 2 + 20
       });
-      this.arrow = this.world.addArrow({
-        xPixels: 100,
-        yPixels: 100,
-        /*
-              The arrow is sketched below. Lettered points are the ones actually drawn in alphabetical order(i.e. A-F)
-              The X-es are shown for illustration only. 
-              Coordinates are A = (x1,y1), B = (x2,y2) and so on. The last point is F = (x6,y6) 
-                                                         E
-                                                         D    X
-                                               X                 X
-                                     X                              X
-                           X                                           X    
-               A                                                          F    
-                           X                                           X    
-                                     X                              X           
-                                               X                 X  
-                                                         B   X
-                                                         C
-        */
+      this.bazooka = this.world.addBazooka({
+        imgSrc: "/img/BAZOOKA/Bazooka.png",
+        scaleX: 1,
+        scaleY: 1,
+        density: 2,
+        friction: 0.8,
+        restitution: 0.3,
+        width: 40,
+        height: 125,
+        xPixels: 120,
+        yPixels: 120,
+        regX: 25.5,
+        regY: 128 - 1.92,
+        angleDegrees: 0
+      });
+      /*
+          # optional: set up frame rate display
+          #@stats = new Stats()
+          #statsCanvas.appendChild @stats.domElement
+          
+        # optional: a callback for each EaselBox2dWorld tick()
+        tick: () ->
+          #@monkey1.ApplyForce(@world.box2dWorld.GetGravity());  
+          #@stats.update()
+      */
 
-        shape_coordinates: [100, 100, 170, 110, 170, 115, 170, 90, 170, 85, 190, 100],
-        rotation: 45
-      });
-      this.stats = new Stats();
-      statsCanvas.appendChild(this.stats.domElement);
     }
-
-    GhostsAndMonstersGame.prototype.tick = function() {
-      return this.stats.update();
-    };
 
     return GhostsAndMonstersGame;
 

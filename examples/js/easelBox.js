@@ -230,14 +230,14 @@
     var getType;
 
     function EaselBoxMonkey(options) {
-      var density, friction, restitution,
-        _this = this;
+      var density, friction, restitution;
       this.spriteSheet = options.SpriteSheet;
-      this.bmpAnimationStandBy = new BitmapAnimation(this.spriteSheet);
-      this.bmpAnimationStandBy.gotoAndPlay("standby");
-      this.bmpAnimationStandBy.name = "monkey_idle";
-      this.bmpAnimationStandBy.currentFrame = 0;
-      this.easelObj = this.bmpAnimationStandBy;
+      this.easelObj = new BitmapAnimation(this.spriteSheet);
+      this.easelObj.gotoAndPlay("standby");
+      this.easelObj.name = "monkey_idle";
+      this.easelObj.currentFrame = 0;
+      this.easelObj.x = options.xPixels;
+      this.easelObj.y = options.yPixels;
       this.easelObj.regX = options.regX;
       this.easelObj.regY = options.regY;
       this.easelObj.scaleX = options.scaleX;
@@ -274,21 +274,19 @@
       this.lowerbodybody = null;
       this.headtorsoweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
       this.torsolowerbodyweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
-      this.easelObj.onPress = function(eventPress) {
-        _this.easelObj.pressedX = eventPress.stageX;
-        _this.easelObj.pressedY = eventPress.stageY;
-        return eventPress.onMouseMove = function(event) {
-          var deltaX, deltaY;
-          deltaX = event.stageX - _this.easelObj.pressedX;
-          deltaY = event.stageY - _this.easelObj.pressedY;
-          _this.setState({
-            xPixels: _this.easelObj.x + deltaX,
-            yPixels: _this.easelObj.y + deltaY
-          });
-          _this.easelObj.pressedX = event.stageX;
-          return _this.easelObj.pressedY = event.stageY;
-        };
-      };
+      /*        
+      @easelObj.onPress = (eventPress) =>
+        #@setState(xPixels: eventPress.stageX, yPixels: eventPress.stageY)
+        @easelObj.pressedX = eventPress.stageX
+        @easelObj.pressedY = eventPress.stageY      
+        eventPress.onMouseMove = (event) =>
+          deltaX = event.stageX - @easelObj.pressedX
+          deltaY = event.stageY - @easelObj.pressedY
+          @setState(xPixels: @easelObj.x+deltaX, yPixels: @easelObj.y+deltaY)
+          @easelObj.pressedX = event.stageX
+          @easelObj.pressedY = event.stageY
+      */
+
     }
 
     EaselBoxMonkey.prototype.update = function() {
@@ -581,6 +579,147 @@
 
   })();
 
+  window.EaselBoxBazooka = (function() {
+    var getType;
+
+    function EaselBoxBazooka(options) {
+      var box2dShape, density, friction, regPoint, restitution,
+        _this = this;
+      this.easelObj = new Bitmap(options.imgSrc);
+      this.easelObj.regX = options.regX;
+      this.easelObj.regY = options.regY;
+      this.easelObj.globalRegX = options.regX + options.xPixels;
+      this.easelObj.globalRegY = options.regY + options.yPixels;
+      this.easelObj.angle = 0;
+      this.prev_angle = 0;
+      this.easelObj.onPress = function(eventPress) {
+        _this.easelObj.angle = _this.prev_angle;
+        eventPress.onMouseMove = function(event) {
+          _this.easelObj.angle = _this.prev_angle + Math.PI / 2 - Math.atan2(_this.easelObj.globalRegY - event.stageY, event.stageX - _this.easelObj.globalRegX) - Math.atan2(eventPress.stageX - _this.easelObj.globalRegX, _this.easelObj.globalRegY - eventPress.stageY);
+          return _this.setState({
+            angleRadians: _this.easelObj.angle,
+            xPixels: _this.easelObj.x,
+            yPixels: _this.easelObj.y
+          });
+        };
+        return eventPress.onMouseUp = function(event) {
+          var beta, theta;
+          _this.prev_angle = _this.easelObj.angle;
+          theta = Math.atan2(_this.easelObj.globalRegY - event.stageY, event.stageX - _this.easelObj.globalRegX);
+          beta = Math.atan2(eventPress.stageX - _this.easelObj.globalRegX, _this.easelObj.globalRegY - eventPress.stageY);
+          return alert(_this.easelObj.angle * 180 / Math.PI + "," + theta * 180 / Math.PI + "," + beta * 180 / Math.PI + ",[" + _this.easelObj.globalRegX + ":" + _this.easelObj.globalRegY + "],[" + eventPress.stageX + ":" + eventPress.stageY + "],[" + event.stageX + ":" + event.stageY);
+        };
+      };
+      regPoint = new Box2D.Common.Math.b2Vec2(-10, -10);
+      box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsBox((options.width / PIXELS_PER_METER) / 2, (options.height / PIXELS_PER_METER) / 2);
+      density = (options && options.density) || 1;
+      friction = (options && options.friction) || 0.5;
+      restitution = (options && options.restitution) || 0.2;
+      this.fixDef = new Box2D.Dynamics.b2FixtureDef;
+      this.fixDef.density = density;
+      this.fixDef.friction = friction;
+      this.fixDef.restitution = restitution;
+      this.fixDef.shape = box2dShape;
+      this.bodyDef = new Box2D.Dynamics.b2BodyDef;
+      this.body = null;
+    }
+
+    EaselBoxBazooka.prototype.update = function() {
+      this.easelObj.x = this.body.GetPosition().x * PIXELS_PER_METER;
+      this.easelObj.y = (this.body.GetPosition().y + 2.3) * PIXELS_PER_METER;
+      return this.easelObj.rotation = this.body.GetAngle() * (180 / Math.PI);
+    };
+
+    EaselBoxBazooka.prototype.setType = function(type) {
+      return this.body.SetType(getType(type));
+    };
+
+    EaselBoxBazooka.prototype.setState = function(options) {
+      var angleDegrees, angleRadians, angularVelDegrees, angularVelRadians, xMeters, xPixels, xVelMeters, xVelPixels, yMeters, yPixels, yVelMeters, yVelPixels;
+      if (options && options.xPixels) {
+        xPixels = options.xPixels;
+        xMeters = xPixels / PIXELS_PER_METER;
+      } else if (options && options.Xmeters) {
+        xMeters = options.Xmeters;
+        xPixels = xMeters * PIXELS_PER_METER;
+      } else {
+        xMeters = 0;
+        xPixels = 0;
+      }
+      if (options && options.yPixels) {
+        yPixels = options.yPixels;
+        yMeters = yPixels / PIXELS_PER_METER;
+      } else if (options && options.Xmeters) {
+        yMeters = options.Ymeters;
+        yPixels = YMeters * PIXELS_PER_METER;
+      } else {
+        yMeters = 0;
+        yPixels = 0;
+      }
+      if (options && options.xVelPixels) {
+        xVelPixels = options.xVelPixels;
+        xVelMeters = xVelPixels / PIXELS_PER_METER;
+      } else if (options && options.xVelMeters) {
+        xVelMeters = options.xVelMeters;
+        xVelPixels = xVelMeters * PIXELS_PER_METER;
+      } else {
+        xVelMeters = 0;
+        xVelPixels = 0;
+      }
+      if (options && options.yVelPixels) {
+        yVelPixels = options.yVelPixels;
+        yVelMeters = yVelPixels / PIXELS_PER_METER;
+      } else if (options && options.yVelMeters) {
+        yVelMeters = options.yVelMeters;
+        yVelPixels = yVelMeters * PIXELS_PER_METER;
+      } else {
+        yVelMeters = 0;
+        yVelPixels = 0;
+      }
+      if (options && options.angleDegrees) {
+        angleDegrees = options.angleDegrees;
+        angleRadians = Math.PI * angleDegrees / 180;
+      } else if (options && options.angleRadians) {
+        angleRadians = options.angleRadians;
+        angleDegrees = 180 * angleRadians / Math.PI;
+      } else {
+        angleRadians = 0;
+        angleDegrees = 0;
+      }
+      if (options && options.angularVelRadians) {
+        angularVelRadians = options.angularVelRadians;
+        angularVelDegrees = 180 * angularVelRadians / Math.PI;
+      } else if (options && options.angularVelDegrees) {
+        angularVelDegrees = options.angularVelDegrees;
+        angularVelRadians = Math.PI * angularVelDegrees / 180;
+      } else {
+        angularVelDegrees = 0;
+        angularVelRadians = 0;
+      }
+      this.easelObj.x = xPixels;
+      this.easelObj.y = yPixels;
+      this.easelObj.rotation = angleDegrees;
+      this.body.GetPosition().x = xMeters;
+      this.body.GetPosition().y = yMeters - 2.3;
+      this.body.SetAngle(angleRadians);
+      this.body.SetAngularVelocity(angularVelRadians);
+      return this.body.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
+    };
+
+    getType = function(type) {
+      if ('dynamic' === type) {
+        return Box2D.Dynamics.b2Body.b2_dynamicBody;
+      } else if ('static' === type) {
+        return Box2D.Dynamics.b2Body.b2_staticBody;
+      } else if ('kinematic' === type) {
+        return Box2D.Dynamics.b2Body.b2_kinematicBody;
+      }
+    };
+
+    return EaselBoxBazooka;
+
+  })();
+
   PIXELS_PER_METER = 30;
 
   window.EaselBoxWorld = (function() {
@@ -608,13 +747,15 @@
     }
 
     EaselBoxWorld.prototype.addLandscape = function(options) {
-      var bound, firstElement, flatLand, height, height_offset, i, img, iter, iterations, left_idx, max, max_width, midpoint_index, midpoint_x, midpoint_y, min, min_width, object, queue, r, right_idx, ticks, tinyRectangle, vpoints_vector, x1, x2, y1, y2, _i, _j, _ref, _ref1;
-      height_offset = options.vertical_offset;
+      var bound, firstElement, i, iter, iterations, left_idx, max, max_width, max_y, max_y_idx, midpoint_index, midpoint_x, midpoint_y, min, min_width, queue, r, right_idx, ticks, tinyRectangle, x0, x1, x2, y0, y1, y2, _i, _ref, _results,
+        _this = this;
+      this.flatLand = 25;
+      this.height_offset = options.vertical_offset;
       min_width = 0;
       max_width = options.width;
       iterations = options.iterations;
       r = options.smoothness;
-      height = options.height;
+      this.height = options.height;
       bound = (function() {
 
         function bound(min_idx, max_idx, iteration) {
@@ -629,14 +770,14 @@
       min = -80;
       max = 50;
       ticks = Math.pow(2, iterations);
-      vpoints_vector = new Array(ticks + 1);
-      vpoints_vector[0] = new Array(2);
-      vpoints_vector[ticks] = new Array(2);
-      vpoints_vector[0][0] = min_width;
-      vpoints_vector[0][1] = height_offset;
-      vpoints_vector[ticks][0] = max_width;
-      vpoints_vector[ticks][1] = height_offset;
-      queue = new Array();
+      this.vpoints_vector = new Array(ticks + 1);
+      this.vpoints_vector[0] = new Array(2);
+      this.vpoints_vector[ticks] = new Array(2);
+      this.vpoints_vector[0][0] = min_width;
+      this.vpoints_vector[0][1] = this.height_offset;
+      this.vpoints_vector[ticks][0] = max_width;
+      this.vpoints_vector[ticks][1] = this.height_offset;
+      queue = [];
       queue.push(new bound(0, ticks, 1));
       while (queue.length > 0) {
         firstElement = queue.shift();
@@ -644,8 +785,8 @@
         right_idx = firstElement.max_idx;
         iter = firstElement.iteration;
         if (right_idx - left_idx > 1) {
-          midpoint_x = (vpoints_vector[right_idx][0] + vpoints_vector[left_idx][0]) / 2;
-          midpoint_y = (vpoints_vector[right_idx][1] + vpoints_vector[left_idx][1]) / 2;
+          midpoint_x = (this.vpoints_vector[right_idx][0] + this.vpoints_vector[left_idx][0]) / 2;
+          midpoint_y = (this.vpoints_vector[right_idx][1] + this.vpoints_vector[left_idx][1]) / 2;
           if (iter > 1) {
             min = min * Math.pow(2, -r);
             max = max * Math.pow(2, -r);
@@ -656,50 +797,80 @@
             midpoint_y = midpoint_y + Math.random() * (max - min) + min;
           }
           midpoint_index = (left_idx + right_idx) / 2;
-          vpoints_vector[midpoint_index] = new Array(2);
-          vpoints_vector[midpoint_index][0] = midpoint_x;
-          vpoints_vector[midpoint_index][1] = midpoint_y;
+          this.vpoints_vector[midpoint_index] = new Array(2);
+          this.vpoints_vector[midpoint_index][0] = midpoint_x;
+          this.vpoints_vector[midpoint_index][1] = midpoint_y;
           queue.push(new bound(left_idx, (right_idx + left_idx) / 2, iter + 1));
           queue.push(new bound((right_idx + left_idx) / 2, right_idx, iter + 1));
         }
       }
-      flatLand = 18;
-      for (i = _i = 0, _ref = vpoints_vector.length - 2; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        x1 = vpoints_vector[i][0];
-        x2 = vpoints_vector[i + 1][0];
-        y1 = vpoints_vector[i][1];
-        y2 = vpoints_vector[i + 1][1];
-        if (i <= flatLand) {
-          y1 = vpoints_vector[0][1];
-          y2 = vpoints_vector[0][1];
+      x0 = this.vpoints_vector[0][0];
+      y0 = this.vpoints_vector[0][1];
+      max_y_idx = (this.vpoints_vector.length - 1) / 2 - 1;
+      max_y = this.vpoints_vector[max_y_idx][1];
+      max_y = this.height_offset;
+      this.landscape = new Shape();
+      this.img = new Image();
+      this.img.src = "/img/LANDSCAPE/angry.png";
+      this.img.onload = function() {
+        var i, x1, x2, y1, y2, _i, _ref;
+        _this.landscape.graphics.beginBitmapFill(_this.img);
+        i = new Image();
+        i.src = "/img/LANDSCAPE/grass-texture-0.png";
+        _this.landscape.graphics.setStrokeStyle(8).beginBitmapStroke(i);
+        _this.landscape.graphics.moveTo(x0, y0);
+        for (i = _i = 1, _ref = _this.vpoints_vector.length - 2; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
+          x1 = _this.vpoints_vector[i][0];
+          x2 = _this.vpoints_vector[i + 1][0];
+          y1 = _this.vpoints_vector[i][1];
+          y2 = _this.vpoints_vector[i + 1][1];
+          if (i <= _this.flatLand || i >= _this.vpoints_vector.length - 1 - _this.flatLand) {
+            y1 = _this.vpoints_vector[0][1];
+            y2 = _this.vpoints_vector[0][1];
+          }
+          _this.landscape.graphics.lineTo(x2, y2);
+          if (i === _this.vpoints_vector.length - 2) {
+            _this.landscape.graphics.beginStroke(null);
+            _this.landscape.graphics.moveTo(x2, y2);
+            _this.landscape.graphics.lineTo(x2, _this.height);
+            _this.landscape.graphics.lineTo(_this.vpoints_vector[0][0], _this.height);
+            _this.landscape.graphics.lineTo(_this.vpoints_vector[0][0], _this.height_offset);
+          }
         }
-        tinyRectangle = this.addEntity({
+        return _this.easelStage.addChild(_this.landscape);
+      };
+      _results = [];
+      for (i = _i = 0, _ref = this.vpoints_vector.length - 2; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        x1 = this.vpoints_vector[i][0];
+        x2 = this.vpoints_vector[i + 1][0];
+        y1 = this.vpoints_vector[i][1];
+        y2 = this.vpoints_vector[i + 1][1];
+        if (i <= this.flatLand || i >= this.vpoints_vector.length - 2 - this.flatLand) {
+          y1 = this.vpoints_vector[0][1];
+          y2 = this.vpoints_vector[0][1];
+        }
+        _results.push(tinyRectangle = this.addEntity({
           whoami: "inefficient rectangle",
-          bottom_left_corner: new Box2D.Common.Math.b2Vec2(x1, height),
+          bottom_left_corner: new Box2D.Common.Math.b2Vec2(x1, this.height),
           top_left_corner: new Box2D.Common.Math.b2Vec2(x1, y1),
           top_right_corner: new Box2D.Common.Math.b2Vec2(x2, y2),
-          bottom_right_corner: new Box2D.Common.Math.b2Vec2(x2, height),
+          bottom_right_corner: new Box2D.Common.Math.b2Vec2(x2, this.height),
           type: options.type
-        });
+        }));
       }
-      object = new Shape();
-      img = new Image();
-      img.src = "/img/LANDSCAPE/snapshot.png";
-      object.graphics.beginBitmapFill(img);
-      object.graphics.moveTo(vpoints_vector[0][0], vpoints_vector[0][1]);
-      for (i = _j = 1, _ref1 = vpoints_vector.length - 2; 1 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 1 <= _ref1 ? ++_j : --_j) {
-        x1 = vpoints_vector[i][0];
-        x2 = vpoints_vector[i + 1][0];
-        y1 = vpoints_vector[i][1];
-        y2 = vpoints_vector[i + 1][1];
-        object.graphics.lineTo(x2, y2);
-        if (i === vpoints_vector.length - 2) {
-          object.graphics.lineTo(x2, height);
-          object.graphics.lineTo(vpoints_vector[0][0], height);
-          object.graphics.lineTo(vpoints_vector[0][0], height_offset);
-        }
-      }
-      return this.easelStage.addChild(object);
+      return _results;
+    };
+
+    EaselBoxWorld.prototype.addBazooka = function(options) {
+      var object;
+      object = new EaselBoxBazooka(options);
+      this.easelStage.addChild(object.easelObj);
+      object.body = this.box2dWorld.CreateBody(object.bodyDef);
+      object.body.CreateFixture(object.fixDef);
+      object.setType('static');
+      object.setState(options);
+      this.objects.push(object);
+      return object;
     };
 
     EaselBoxWorld.prototype.addMonkey = function(options) {
