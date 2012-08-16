@@ -15,6 +15,8 @@ joined_file_args = ['-c', '-j', 'examples/js/easelBox.js',
   'src/easelBox/easelBoxArrow',
   'src/easelBox/easelBoxBazooka',
   'src/easelBox/easelBoxWorld',
+  'src/easelBox/easelBoxBox',
+  'src/easelBox/easelBoxBanana'
 ]
 
 messages = (coffee) ->

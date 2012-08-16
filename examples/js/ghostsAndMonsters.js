@@ -4,7 +4,7 @@
   window.GhostsAndMonstersGame = (function() {
     var PIXELS_PER_METER, forceMultiplier, frameRate, gravityX, gravityY;
 
-    PIXELS_PER_METER = 20;
+    PIXELS_PER_METER = 10;
 
     gravityX = 0;
 
@@ -47,29 +47,48 @@
         vertical_offset: this.voffset,
         type: 'static'
       });
-      this.monkey1 = this.world.addMonkey({
-        SpriteSheet: new SpriteSheet({
-          images: ["/img/BREATH/left_breath1-resized.png", "/img/BREATH/left_breath2-resized.png", "/img/BREATH/left_breath3-resized.png", "/img/BREATH/left_breath4-resized.png"],
-          frames: {
-            width: 308,
-            height: 308
-          },
-          animations: {
-            standby: [0, 3, "standby", 5]
-          }
-        }),
-        scaleX: 0.5,
-        scaleY: 0.5,
-        size_head: 15,
-        size_torso: 20,
-        size_lowerbody: 22,
+      this.banana = this.world.addBanana({
+        imgSrc: "/img/BANANA/banana.png",
+        scaleX: 0.06,
+        scaleY: 0.06,
         density: 2,
         friction: 0.8,
         restitution: 0.3,
-        xPixels: 60,
-        yPixels: this.voffset - 20 - 22 * 2,
-        regX: 308 / 2,
-        regY: 308 / 2 + 20
+        width: 20,
+        height: 40,
+        xPixels: 80,
+        yPixels: 300
+      });
+      this.monkey1 = this.world.addMonkey({
+        SpriteSheet: new SpriteSheet({
+          images: ["/img/BREATH2/left/breath_left_1.png", "/img/BREATH2/left/breath_left_2.png", "/img/BREATH2/left/breath_left_3.png", "/img/BREATH2/left/breath_left_4.png", "/img/BREATH2/left/breath_left_5.png"],
+          frames: {
+            width: 800,
+            height: 600
+          },
+          animations: {
+            standby: [0, 4, "standby", 5]
+          }
+        }),
+        scaleX: 0.3,
+        scaleY: 0.3,
+        size_head: 20,
+        size_torso: 25,
+        size_lowerbody: 32,
+        density: 2,
+        friction: 0.8,
+        restitution: 0.3,
+        xPixels: 75,
+        yPixels: this.voffset - 5,
+        regX: 110,
+        regY: 550
+      });
+      this.box = this.world.addBox({
+        imgSrc: "/img/BOX/box.png",
+        scaleX: 1,
+        scaleY: 1,
+        xPixels: 8,
+        yPixels: this.voffset - 65
       });
       this.monkey2 = this.world.addMonkey({
         SpriteSheet: new SpriteSheet({
@@ -93,7 +112,9 @@
         xPixels: canvas.width - 22 - 38,
         yPixels: this.voffset - 20 - 22 * 2,
         regX: 308 / 2,
-        regY: 308 / 2 + 20
+        regY: 308 / 2 + 20,
+        easelx: 100,
+        easely: 100
       });
       this.bazooka = this.world.addBazooka({
         imgSrc: "/img/BAZOOKA/Bazooka.png",

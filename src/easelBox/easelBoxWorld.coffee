@@ -1,7 +1,8 @@
-PIXELS_PER_METER = 30
+PIXELS_PER_METER = 10
 
 class window.EaselBoxWorld
   minFPS = 10 # weird stuff happens when we step through the physics when the frame rate is lower than this
+  
   constructor: (@callingObj, frameRate, canvas, debugCanvas, gravityX, gravityY, @pixelsPerMeter) -> 
     PIXELS_PER_METER = @pixelsPerMeter
       
@@ -13,11 +14,7 @@ class window.EaselBoxWorld
     @box2dWorld = new Box2D.Dynamics.b2World(new Box2D.Common.Math.b2Vec2(gravityX, gravityY), true)
 
     # set up EaselJS
-    @easelStage = new Stage(canvas)
-  
-      
-      
-    
+    @easelStage = new Stage(canvas)    
     # array of entities to update later
     @objects = []
 
@@ -32,7 +29,7 @@ class window.EaselBoxWorld
 
   addLandscape: (options) ->
     #how much flat land should we dedicate to each gorilla?   
-    @flatLand=25
+    @flatLand=40
     #generate a random landscape via the midpoint displacement method
     #@height_offset - the base line for the landscape
     #min/max_width - the left and right boundaries of the canvas
@@ -144,6 +141,19 @@ class window.EaselBoxWorld
     @objects.push(object) 
     return object     
    
+  addBanana: (options) ->
+    object = new EaselBoxBanana(options)  
+    #@easelStage.addChild object.easelObj
+    object.body = @box2dWorld.CreateBody(object.bodyDef)
+    object.body.CreateFixture(object.fixDef)
+    object.setType('dynamic')
+    object.setState(options)
+    @objects.push(object)
+    return object
+   
+  @removeBanana: () ->
+    @easelStage.removeChild(@easelStage.getNumChildren()-1)
+   
   addMonkey: (options) ->
     object = new EaselBoxMonkey(options)
     #add to canvas
@@ -166,11 +176,15 @@ class window.EaselBoxWorld
     #torso->lower body
     object.torsolowerbodyweldJointDef.Initialize(object.torsobody,object.lowerbodybody,object.lowerbodybody.GetWorldCenter())
     @box2dWorld.CreateJoint(object.headtorsoweldJointDef)
-    @box2dWorld.CreateJoint(object.torsolowerbodyweldJointDef)
-  
+    @box2dWorld.CreateJoint(object.torsolowerbodyweldJointDef)  
     return object
     
-    
+  addBox: (options) ->
+    object = new EaselBoxBox(options)  
+    @easelStage.addChild object.easelObj
+    object.setState(options)
+    @objects.push(object)
+    return object
     
   addArrow: (options) ->
     object=new EaselBoxArrow(options)

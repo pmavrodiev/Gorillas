@@ -1,31 +1,11 @@
-class window.EaselBoxBazooka
+class window.EaselBoxBanana
   constructor: (options) ->  
     #INIT THE EASEL SHAPE
-    @easelObj = new Bitmap(options.imgSrc)
-    @easelObj.regX = options.regX
-    @easelObj.regY = options.regY
+    @easelObj = new Bitmap(options.imgSrc)   
     @easelObj.globalRegX =  options.xPixels
-    @easelObj.globalRegY =  options.yPixels        
-    @easelObj.angle=0 
-    @prev_angle=0      
-   
-    
-    
-    @easelObj.onPress = (eventPress) =>
-      @easelObj.angle = @prev_angle       
-      eventPress.onMouseMove = (event) =>        
-        #90-theta-beta
-        @easelObj.angle=@prev_angle+Math.PI/2 - 
-                        Math.atan2(@easelObj.globalRegY-event.stageY,event.stageX-@easelObj.globalRegX)-
-                        Math.atan2(eventPress.stageX-@easelObj.globalRegX,@easelObj.globalRegY-eventPress.stageY)
-        @setState(
-         angleRadians: @easelObj.angle,
-         xPixels: @easelObj.x, 
-         yPixels: @easelObj.y         
-         )        
-      eventPress.onMouseUp = (event) =>
-         @prev_angle = @easelObj.angle
-         
+    @easelObj.globalRegY =  options.yPixels   
+    @easelObj.scaleX = options.scaleX
+    @easelObj.scaleY = options.scaleY
     # init the Box2d physics entity
     regPoint = new Box2D.Common.Math.b2Vec2(-10,-10)
     box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsBox((options.width/PIXELS_PER_METER)/2,

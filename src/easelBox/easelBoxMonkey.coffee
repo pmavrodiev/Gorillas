@@ -7,13 +7,17 @@ class window.EaselBoxMonkey
     @easelObj = new BitmapAnimation(@spriteSheet)
     @easelObj.gotoAndPlay("standby")
     @easelObj.name = "monkey_idle"    
-    @easelObj.currentFrame = 0       
+    @easelObj.currentFrame = 0      
     @easelObj.x = options.xPixels
     @easelObj.y = options.yPixels
     @easelObj.regX = options.regX
     @easelObj.regY = options.regY
     @easelObj.scaleX = options.scaleX
     @easelObj.scaleY = options.scaleY
+    @easelObj.globalRegX =  options.xPixels
+    @easelObj.globalRegY =  options.yPixels
+    @easelObj.angle=0 
+    @prev_angle=0   
     
     #INIT THE BOX2D COMPLEX SHAPE   
     @size_head_meters = options.size_head / PIXELS_PER_METER
@@ -65,24 +69,31 @@ class window.EaselBoxMonkey
     @torsolowerbodyweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef()
     
     
-    ###        
+    
     @easelObj.onPress = (eventPress) =>
-      #@setState(xPixels: eventPress.stageX, yPixels: eventPress.stageY)
-      @easelObj.pressedX = eventPress.stageX
-      @easelObj.pressedY = eventPress.stageY      
-      eventPress.onMouseMove = (event) =>
-        deltaX = event.stageX - @easelObj.pressedX
-        deltaY = event.stageY - @easelObj.pressedY
-        @setState(xPixels: @easelObj.x+deltaX, yPixels: @easelObj.y+deltaY)
-        @easelObj.pressedX = event.stageX
-        @easelObj.pressedY = event.stageY
-    ###     
+      @easelObj.angle = @prev_angle       
+      eventPress.onMouseMove = (event) =>        
+        #90-theta-beta
+        @easelObj.angle=@prev_angle+Math.PI/2 - 
+                        Math.atan2(@easelObj.globalRegY-event.stageY,event.stageX-@easelObj.globalRegX)-
+                        Math.atan2(eventPress.stageX-@easelObj.globalRegX,@easelObj.globalRegY-eventPress.stageY)
+        @setState(
+         angleRadians: @easelObj.angle,
+         xPixels: @easelObj.x, 
+         yPixels: @easelObj.y         
+         )        
+      eventPress.onMouseUp = (event) =>
+         @prev_angle = @easelObj.angle
+         
+           
+  
+         
 
   # update canvas position based on the physical position of the torso!
   update: ->
-    @easelObj.x = @torsobody.GetPosition().x * PIXELS_PER_METER
-    @easelObj.y = @torsobody.GetPosition().y * PIXELS_PER_METER
-    @easelObj.rotation = @torsobody.GetAngle() * (180 / Math.PI)
+    #@easelObj.x = @torsobody.GetPosition().x * PIXELS_PER_METER
+    #@easelObj.y = @torsobody.GetPosition().y * PIXELS_PER_METER - 50
+    #@easelObj.rotation = @torsobody.GetAngle() * (180 / Math.PI)
     
     
   ApplyForce: (worldgravity) ->
@@ -102,7 +113,6 @@ class window.EaselBoxMonkey
   setState: (options) ->
     # let's do all the conversions here for you, so you can specify properties in either 
     # pixels or meters, and degrees or radians
-
     if options and options.xPixels
       xPixels = options.xPixels
       xMeters = xPixels / PIXELS_PER_METER
@@ -171,19 +181,19 @@ class window.EaselBoxMonkey
     # FOR BOX2D
     #head
     @headbody.GetPosition().x = xMeters
-    @headbody.GetPosition().y = yMeters-@size_torso_meters-@size_head_meters-0.1
+    @headbody.GetPosition().y = yMeters-@size_torso_meters-@size_head_meters-0.1-8.5
     @headbody.SetAngle(angleRadians)
     @headbody.SetAngularVelocity(angularVelRadians)
     @headbody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters))
     #torso
     @torsobody.GetPosition().x = xMeters
-    @torsobody.GetPosition().y = yMeters
+    @torsobody.GetPosition().y = yMeters-8.5
     @torsobody.SetAngle(angleRadians)
     @torsobody.SetAngularVelocity(angularVelRadians)
     @torsobody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters))
     #lower body 
     @lowerbodybody.GetPosition().x = xMeters
-    @lowerbodybody.GetPosition().y = yMeters+@size_torso_meters+@size_lowerbody_meters+0.1
+    @lowerbodybody.GetPosition().y = yMeters+@size_torso_meters+@size_lowerbody_meters+0.1-8.5
     @lowerbodybody.SetAngle(angleRadians)
     @lowerbodybody.SetAngularVelocity(angularVelRadians)
     @lowerbodybody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters))

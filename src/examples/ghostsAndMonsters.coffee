@@ -1,6 +1,6 @@
 class window.GhostsAndMonstersGame
   # to set up Easel-Box2d world
-  PIXELS_PER_METER = 20
+  PIXELS_PER_METER = 10
   gravityX = 0
   gravityY = 10
   # game-specific
@@ -40,30 +40,54 @@ class window.GhostsAndMonstersGame
       type: 'static'
     )
     
+    @banana = @world.addBanana(
+      imgSrc: "/img/BANANA/banana.png"
+      scaleX: 0.06,
+      scaleY: 0.06,
+      density: 2,
+      friction: 0.8,
+      restitution: 0.3,
+      #dimensions of the  Box2D rectangle in pixels 
+      width: 20,
+      height: 40,
+      #the position of the easeljs object
+      xPixels: 80, 
+      yPixels: 300,
+    )
+    
     @monkey1 = @world.addMonkey(
       SpriteSheet:  new SpriteSheet(
-        images: ["/img/BREATH/left_breath1-resized.png","/img/BREATH/left_breath2-resized.png","/img/BREATH/left_breath3-resized.png","/img/BREATH/left_breath4-resized.png"],
-        frames: {width:308,height:308}
-        animations: {standby:[0,3,"standby",5]}      
+        images: ["/img/BREATH2/left/breath_left_1.png","/img/BREATH2/left/breath_left_2.png","/img/BREATH2/left/breath_left_3.png","/img/BREATH2/left/breath_left_4.png","/img/BREATH2/left/breath_left_5.png"],
+        frames: {width:800,height:600}
+        animations: {standby:[0,4,"standby",5]}      
         ),     
-      scaleX: 0.5,
-      scaleY: 0.5,
+      scaleX: 0.3,
+      scaleY: 0.3,
       #sizes (=half the side length of the respective square) in pixels. 
       #Coordinates of the body parts are relative to the location of the torso
-      size_head:      15,
-      size_torso:     20,
-      size_lowerbody: 22,
+      size_head:      20,
+      size_torso:     25,
+      size_lowerbody: 32,
       density: 2,
       friction: 0.8,
       restitution: 0.3,
       #location of the torso's center in pixels
-      xPixels: 60, 
-      yPixels: @voffset-20-22*2, #@voffset - size_torso-2*size_lowerbody
-      #for the easel object. set these to half the dimnesions of the png 
-      regX: 308/2,
-      regY: 308/2+20
+      xPixels: 75, 
+      yPixels: @voffset-5,
+      #for the easel object. 
+      regX: 110,
+      regY: 550
     ) 
   
+    @box = @world.addBox(
+      imgSrc: "/img/BOX/box.png"
+      scaleX: 1,
+      scaleY: 1,    
+      #the position of the easeljs object
+      xPixels: 8, 
+      yPixels: @voffset-65,       
+    )
+    
     
     @monkey2 = @world.addMonkey(
       SpriteSheet:  new SpriteSheet(
@@ -85,7 +109,10 @@ class window.GhostsAndMonstersGame
       xPixels: canvas.width-22-38, 
       yPixels: @voffset-20-22*2,
       regX:308/2,
-      regY:308/2+20
+      regY:308/2+20,
+      #location of the easel object
+      easelx: 100,
+      easely: 100
     ) 
    
    
@@ -105,7 +132,10 @@ class window.GhostsAndMonstersGame
       regX: 25.5,
       regY: 128-1.92,
       angleDegrees: 0
-    ) 
+    )
+    
+    
+    
     #@arrow = @world.addArrow(
      # xPixels: 100,
      # yPixels:100
