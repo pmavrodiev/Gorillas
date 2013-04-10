@@ -118,86 +118,6 @@
 
   })();
 
-  window.EaselBoxCircle = (function(_super) {
-
-    __extends(EaselBoxCircle, _super);
-
-    function EaselBoxCircle(radiusPixels, options) {
-      var bmpAnim, box2dShape, data, object, radiusMeters;
-      if (radiusPixels == null) {
-        radiusPixels = 20;
-      }
-      if (options == null) {
-        options = null;
-      }
-      radiusMeters = radiusPixels / PIXELS_PER_METER;
-      box2dShape = new Box2D.Collision.Shapes.b2CircleShape(radiusMeters);
-      object = null;
-      if (options && options.imgSrc) {
-        if (options && options.frames) {
-          data = {
-            images: [options.imgSrc],
-            frames: options.frames
-          };
-          bmpAnim = new BitmapAnimation(new SpriteSheet(data));
-          object = bmpAnim.clone();
-          object.gotoAndPlay(options.startFrame | 0);
-        } else {
-          object = new Bitmap(options.imgSrc);
-        }
-        object.scaleX = options.scaleX || 1;
-        object.scaleY = options.scaleY || 1;
-        object.regX = radiusPixels;
-        object.regY = radiusPixels;
-      } else {
-        object = new Shape();
-        object.graphics.beginRadialGradientFill(["#F00", "#00F"], [0.1, .9], 0, 0, 0, 0, 0, radiusPixels).drawCircle(0, 0, radiusPixels).beginFill("#FFF").drawRect(0, -1, radiusPixels, 2);
-      }
-      EaselBoxCircle.__super__.constructor.call(this, object, box2dShape, options);
-    }
-
-    return EaselBoxCircle;
-
-  })(EaselBoxObject);
-
-  window.EaselBoxRectangle = (function(_super) {
-
-    __extends(EaselBoxRectangle, _super);
-
-    function EaselBoxRectangle(widthPixels, heightPixels, options) {
-      var bmpAnim, box2dShape, data, heightMeters, object, widthMeters;
-      if (options == null) {
-        options = null;
-      }
-      widthMeters = widthPixels / PIXELS_PER_METER;
-      heightMeters = heightPixels / PIXELS_PER_METER;
-      box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsBox(widthMeters / 2, heightMeters / 2);
-      object = null;
-      if (options && options.imgSrc) {
-        if (options && options.frames) {
-          data = {
-            images: [options.imgSrc],
-            frames: options.frames
-          };
-          bmpAnim = new BitmapAnimation(new SpriteSheet(data));
-          object = bmpAnim.clone();
-          object.gotoAndPlay(options.startFrame | 0);
-        } else {
-          object = new Bitmap(options.imgSrc);
-        }
-        object.regX = widthPixels / 2;
-        object.regY = heightPixels / 2;
-      } else {
-        object = new Shape();
-        object.graphics.beginLinearGradientFill(["#F00", "#00F"], [0, 0.5], -widthPixels / 2, 0, widthPixels, 0).drawRect(-widthPixels / 2, -heightPixels / 2, widthPixels, heightPixels);
-      }
-      EaselBoxRectangle.__super__.constructor.call(this, object, box2dShape, options);
-    }
-
-    return EaselBoxRectangle;
-
-  })(EaselBoxObject);
-
   window.EaselBoxLandscapeRectangle = (function(_super) {
 
     __extends(EaselBoxLandscapeRectangle, _super);
@@ -229,9 +149,10 @@
   window.EaselBoxMonkey = (function() {
     var getType;
 
-    function EaselBoxMonkey(options) {
-      var density, friction, restitution,
-        _this = this;
+    function EaselBoxMonkey(callingObject, options) {
+      var density, friction, restitution;
+      this.callingObject = callingObject;
+      this.voffset = options.voffset;
       this.spriteSheet = options.SpriteSheet;
       this.easelObj = new BitmapAnimation(this.spriteSheet);
       this.easelObj.gotoAndPlay("standby");
@@ -279,8 +200,18 @@
       this.lowerbodybody = null;
       this.headtorsoweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
       this.torsolowerbodyweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef();
-      this.easelObj.onPress = function(eventPress) {
+    }
+
+    EaselBoxMonkey.prototype.removeActionListeners = function() {
+      var _this = this;
+      return this.easelObj.onPress = function(eventPress) {};
+    };
+
+    EaselBoxMonkey.prototype.addActionListeners = function() {
+      var _this = this;
+      return this.easelObj.onPress = function(eventPress) {
         _this.easelObj.angle = _this.prev_angle;
+        _this.easelObj.gotoAndPlay("approachbazooka");
         eventPress.onMouseMove = function(event) {
           _this.easelObj.angle = _this.prev_angle + Math.PI / 2 - Math.atan2(_this.easelObj.globalRegY - event.stageY, event.stageX - _this.easelObj.globalRegX) - Math.atan2(eventPress.stageX - _this.easelObj.globalRegX, _this.easelObj.globalRegY - eventPress.stageY);
           return _this.setState({
@@ -290,10 +221,21 @@
           });
         };
         return eventPress.onMouseUp = function(event) {
-          return _this.prev_angle = _this.easelObj.angle;
+          var beta, d, theta, x, xm, y, ym;
+          _this.prev_angle = _this.easelObj.angle;
+          xm = (173 - 33) * 1.0 + 75;
+          ym = (_this.voffset - 75) - (165 - 15 - (165 - 100)) * 1;
+          theta = Math.atan2(_this.easelObj.globalRegY - ym, xm - _this.easelObj.globalRegX);
+          beta = Math.PI / 2 - theta - _this.easelObj.angle * -1;
+          d = (_this.easelObj.globalRegY - ym) / Math.sin(theta);
+          x = d * Math.sin(beta) + _this.easelObj.globalRegX;
+          y = _this.easelObj.globalRegY - d * Math.cos(beta);
+          _this.easelObj.gotoAndPlay("shoot");
+          _this.removeActionListeners();
+          return _this.callingObject.shootBanana(x, y, _this.easelObj.angle * -1);
         };
       };
-    }
+    };
 
     EaselBoxMonkey.prototype.update = function() {};
 
@@ -375,17 +317,17 @@
       this.easelObj.y = yPixels;
       this.easelObj.rotation = angleDegrees;
       this.headbody.GetPosition().x = xMeters;
-      this.headbody.GetPosition().y = yMeters - this.size_torso_meters - this.size_head_meters - 0.1 - 8.5;
+      this.headbody.GetPosition().y = yMeters - this.size_torso_meters - this.size_head_meters - 0.1 - 4;
       this.headbody.SetAngle(angleRadians);
       this.headbody.SetAngularVelocity(angularVelRadians);
       this.headbody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
       this.torsobody.GetPosition().x = xMeters;
-      this.torsobody.GetPosition().y = yMeters - 8.5;
+      this.torsobody.GetPosition().y = yMeters - 4;
       this.torsobody.SetAngle(angleRadians);
       this.torsobody.SetAngularVelocity(angularVelRadians);
       this.torsobody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
       this.lowerbodybody.GetPosition().x = xMeters;
-      this.lowerbodybody.GetPosition().y = yMeters + this.size_torso_meters + this.size_lowerbody_meters + 0.1 - 8.5;
+      this.lowerbodybody.GetPosition().y = yMeters + this.size_torso_meters + this.size_lowerbody_meters + 0.1 - 4;
       this.lowerbodybody.SetAngle(angleRadians);
       this.lowerbodybody.SetAngularVelocity(angularVelRadians);
       return this.lowerbodybody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
@@ -405,320 +347,7 @@
 
   })();
 
-  window.EaselBoxArrow = (function() {
-    var getType;
-
-    function EaselBoxArrow(options) {
-      var _this = this;
-      this.x1 = options.shape_coordinates[0];
-      this.y1 = options.shape_coordinates[1];
-      this.x2 = options.shape_coordinates[2];
-      this.y2 = options.shape_coordinates[3];
-      this.x3 = options.shape_coordinates[4];
-      this.y3 = options.shape_coordinates[5];
-      this.x4 = options.shape_coordinates[6];
-      this.y4 = options.shape_coordinates[7];
-      this.x5 = options.shape_coordinates[8];
-      this.y5 = options.shape_coordinates[9];
-      this.x6 = options.shape_coordinates[10];
-      this.y6 = options.shape_coordinates[11];
-      this.rotation = options.rotation | 0;
-      if (options.imgSrc) {
-        this.easelObj = new Bitmap(options.imgSrc);
-      } else {
-        this.easelObj = new Shape();
-        this.easelObj.REGX = 0;
-        this.easelObj.REGY = 0;
-        this.drawme();
-      }
-      this.easelObj.onPress = function(eventPress) {
-        _this.rotateme(30);
-        eventPress.onMouseMove = function(event) {};
-        return eventPress.onMouseUp = function(event) {};
-      };
-    }
-
-    EaselBoxArrow.prototype.drawme = function(xPixels, yPixels) {
-      this.easelObj.regX = this.easelObj.REGX;
-      this.easelObj.regY = this.easelObj.REGY;
-      console.log(this.x1 + ":" + this.y1 + ":" + this.x2 + ":" + this.y2 + ":" + this.x3 + ":" + this.y3 + ":" + this.x4 + ":" + this.y4 + ":" + this.x5 + ":" + this.y5 + ":" + this.x6 + ":" + this.y6);
-      this.easelObj.graphics.clear();
-      this.easelObj.graphics.beginFill("pink");
-      this.easelObj.graphics.moveTo(this.x1, this.y1);
-      this.easelObj.graphics.lineTo(this.x2, this.y2);
-      this.easelObj.graphics.lineTo(this.x3, this.y3);
-      this.easelObj.graphics.lineTo(this.x4, this.y4);
-      this.easelObj.graphics.lineTo(this.x5, this.y5);
-      this.easelObj.graphics.lineTo(this.x6, this.y6);
-      this.easelObj.graphics.lineTo(this.x3, this.y3);
-      this.easelObj.graphics.lineTo(this.x4, this.y4);
-      this.easelObj.graphics.lineTo(this.x1, this.y1);
-      return this.easelObj.setTransform(this.rotation);
-    };
-
-    EaselBoxArrow.prototype.rotateme = function(angleDegrees) {
-      var computePointRotation, x2rotated, x3rotated, x4rotated, x5rotated, x6rotated;
-      computePointRotation = function(x, y, x1, y1, angleDegrees) {
-        var A, B, M, N, P, Z, point;
-        point = (function() {
-
-          function point() {
-            this.x = 0;
-            this.y = 0;
-          }
-
-          return point;
-
-        })();
-        A = Math.pow(x - x1, 2) + Math.pow(y1 - y, 2);
-        B = 4 * Math.pow(Math.sin((angleDegrees / 2) * Math.PI / 180), 2) * A;
-        M = -(B + y1 * y1 - y * y - A - Math.pow(x - x1, 2)) / 2;
-        Z = 2 * y1 * Math.pow(x - x1, 2) + 2 * M * (y - y1);
-        N = A * Math.pow(x - x1, 2) - M * M;
-        P = N - y1 * y1 * Math.pow(x - x1, 2);
-        point = new Point();
-        point.y = (Z - Math.sqrt(Math.pow(Z, 2) + 4 * A * P)) / (2 * A);
-        point.x = x1 + Math.sqrt(A - Math.pow(y1 - point.y, 2));
-        return point;
-      };
-      x2rotated = computePointRotation(this.x2, this.y2, this.x1, this.y1, angleDegrees);
-      x3rotated = computePointRotation(this.x3, this.y3, this.x1, this.y1, angleDegrees);
-      x4rotated = computePointRotation(this.x4, this.y4, this.x1, this.y1, angleDegrees);
-      x5rotated = computePointRotation(this.x5, this.y5, this.x1, this.y1, angleDegrees);
-      x6rotated = computePointRotation(this.x6, this.y6, this.x1, this.y1, angleDegrees);
-      this.x2 = x2rotated.x;
-      this.y2 = x2rotated.y;
-      this.x3 = x3rotated.x;
-      this.y3 = x3rotated.y;
-      this.x4 = x4rotated.x;
-      this.y4 = x4rotated.y;
-      this.x5 = x5rotated.x;
-      this.y5 = x5rotated.y;
-      this.x6 = x6rotated.x;
-      this.y6 = x6rotated.y;
-      console.log(this.x1 + ":" + this.y1 + ":" + this.x2 + ":" + this.y2 + ":" + this.x3 + ":" + this.y3 + ":" + this.x4 + ":" + this.y4 + ":" + this.x5 + ":" + this.y5 + ":" + this.x6 + ":" + this.y6);
-      return this.drawme();
-    };
-
-    EaselBoxArrow.prototype.update = function() {
-      this.easelObj.x = this.easelObj.x;
-      this.easelObj.y = this.easelObj.y;
-      return this.easelObj.rotation = this.easelObj.rotation;
-    };
-
-    EaselBoxArrow.prototype.setType = function(type) {};
-
-    EaselBoxArrow.prototype.setState = function(options) {
-      var angleDegrees, angleRadians, angularVelDegrees, angularVelRadians, xMeters, xPixels, xVelMeters, xVelPixels, yMeters, yPixels, yVelMeters, yVelPixels;
-      if (options && options.xPixels) {
-        xPixels = options.xPixels;
-        xMeters = xPixels / PIXELS_PER_METER;
-      } else if (options && options.Xmeters) {
-        xMeters = options.Xmeters;
-        xPixels = xMeters * PIXELS_PER_METER;
-      } else {
-        xMeters = 0;
-        xPixels = 0;
-      }
-      if (options && options.yPixels) {
-        yPixels = options.yPixels;
-        yMeters = yPixels / PIXELS_PER_METER;
-      } else if (options && options.Xmeters) {
-        yMeters = options.Ymeters;
-        yPixels = YMeters * PIXELS_PER_METER;
-      } else {
-        yMeters = 0;
-        yPixels = 0;
-      }
-      if (options && options.xVelPixels) {
-        xVelPixels = options.xVelPixels;
-        xVelMeters = xVelPixels / PIXELS_PER_METER;
-      } else if (options && options.xVelMeters) {
-        xVelMeters = options.xVelMeters;
-        xVelPixels = xVelMeters * PIXELS_PER_METER;
-      } else {
-        xVelMeters = 0;
-        xVelPixels = 0;
-      }
-      if (options && options.yVelPixels) {
-        yVelPixels = options.yVelPixels;
-        yVelMeters = yVelPixels / PIXELS_PER_METER;
-      } else if (options && options.yVelMeters) {
-        yVelMeters = options.yVelMeters;
-        yVelPixels = yVelMeters * PIXELS_PER_METER;
-      } else {
-        yVelMeters = 0;
-        yVelPixels = 0;
-      }
-      if (options && options.angleDegrees) {
-        angleDegrees = options.angleDegrees;
-        angleRadians = Math.PI * angleDegrees / 180;
-      } else if (options && options.angleRadians) {
-        angleRadians = options.angleRadians;
-        angleDegrees = 180 * angleRadians / Math.PI;
-      } else {
-        angleRadians = 0;
-        angleDegrees = 0;
-      }
-      if (options && options.angularVelRadians) {
-        angularVelRadians = options.angularVelRadians;
-        angularVelDegrees = 180 * angularVelRadians / Math.PI;
-      } else if (options && options.angularVelDegrees) {
-        angularVelDegrees = options.angularVelDegrees;
-        angularVelRadians = Math.PI * angularVelDegrees / 180;
-      } else {
-        angularVelDegrees = 0;
-        angularVelRadians = 0;
-      }
-      this.easelObj.x = xPixels;
-      this.easelObj.y = yPixels;
-      return this.easelObj.rotation = angleDegrees;
-    };
-
-    getType = function(type) {};
-
-    return EaselBoxArrow;
-
-  })();
-
-  window.EaselBoxBazooka = (function() {
-    var getType;
-
-    function EaselBoxBazooka(options) {
-      var box2dShape, density, friction, regPoint, restitution,
-        _this = this;
-      this.easelObj = new Bitmap(options.imgSrc);
-      this.easelObj.regX = options.regX;
-      this.easelObj.regY = options.regY;
-      this.easelObj.globalRegX = options.xPixels;
-      this.easelObj.globalRegY = options.yPixels;
-      this.easelObj.angle = 0;
-      this.prev_angle = 0;
-      this.easelObj.onPress = function(eventPress) {
-        _this.easelObj.angle = _this.prev_angle;
-        eventPress.onMouseMove = function(event) {
-          _this.easelObj.angle = _this.prev_angle + Math.PI / 2 - Math.atan2(_this.easelObj.globalRegY - event.stageY, event.stageX - _this.easelObj.globalRegX) - Math.atan2(eventPress.stageX - _this.easelObj.globalRegX, _this.easelObj.globalRegY - eventPress.stageY);
-          return _this.setState({
-            angleRadians: _this.easelObj.angle,
-            xPixels: _this.easelObj.x,
-            yPixels: _this.easelObj.y
-          });
-        };
-        return eventPress.onMouseUp = function(event) {
-          return _this.prev_angle = _this.easelObj.angle;
-        };
-      };
-      regPoint = new Box2D.Common.Math.b2Vec2(-10, -10);
-      box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsBox((options.width / PIXELS_PER_METER) / 2, (options.height / PIXELS_PER_METER) / 2);
-      density = (options && options.density) || 1;
-      friction = (options && options.friction) || 0.5;
-      restitution = (options && options.restitution) || 0.2;
-      this.fixDef = new Box2D.Dynamics.b2FixtureDef;
-      this.fixDef.density = density;
-      this.fixDef.friction = friction;
-      this.fixDef.restitution = restitution;
-      this.fixDef.shape = box2dShape;
-      this.bodyDef = new Box2D.Dynamics.b2BodyDef;
-      this.body = null;
-    }
-
-    EaselBoxBazooka.prototype.update = function() {
-      this.easelObj.x = this.body.GetPosition().x * PIXELS_PER_METER;
-      this.easelObj.y = (this.body.GetPosition().y + 2.3) * PIXELS_PER_METER;
-      return this.easelObj.rotation = this.body.GetAngle() * (180 / Math.PI);
-    };
-
-    EaselBoxBazooka.prototype.setType = function(type) {
-      return this.body.SetType(getType(type));
-    };
-
-    EaselBoxBazooka.prototype.setState = function(options) {
-      var angleDegrees, angleRadians, angularVelDegrees, angularVelRadians, xMeters, xPixels, xVelMeters, xVelPixels, yMeters, yPixels, yVelMeters, yVelPixels;
-      if (options && options.xPixels) {
-        xPixels = options.xPixels;
-        xMeters = xPixels / PIXELS_PER_METER;
-      } else if (options && options.Xmeters) {
-        xMeters = options.Xmeters;
-        xPixels = xMeters * PIXELS_PER_METER;
-      } else {
-        xMeters = 0;
-        xPixels = 0;
-      }
-      if (options && options.yPixels) {
-        yPixels = options.yPixels;
-        yMeters = yPixels / PIXELS_PER_METER;
-      } else if (options && options.Xmeters) {
-        yMeters = options.Ymeters;
-        yPixels = YMeters * PIXELS_PER_METER;
-      } else {
-        yMeters = 0;
-        yPixels = 0;
-      }
-      if (options && options.xVelPixels) {
-        xVelPixels = options.xVelPixels;
-        xVelMeters = xVelPixels / PIXELS_PER_METER;
-      } else if (options && options.xVelMeters) {
-        xVelMeters = options.xVelMeters;
-        xVelPixels = xVelMeters * PIXELS_PER_METER;
-      } else {
-        xVelMeters = 0;
-        xVelPixels = 0;
-      }
-      if (options && options.yVelPixels) {
-        yVelPixels = options.yVelPixels;
-        yVelMeters = yVelPixels / PIXELS_PER_METER;
-      } else if (options && options.yVelMeters) {
-        yVelMeters = options.yVelMeters;
-        yVelPixels = yVelMeters * PIXELS_PER_METER;
-      } else {
-        yVelMeters = 0;
-        yVelPixels = 0;
-      }
-      if (options && options.angleDegrees) {
-        angleDegrees = options.angleDegrees;
-        angleRadians = Math.PI * angleDegrees / 180;
-      } else if (options && options.angleRadians) {
-        angleRadians = options.angleRadians;
-        angleDegrees = 180 * angleRadians / Math.PI;
-      } else {
-        angleRadians = 0;
-        angleDegrees = 0;
-      }
-      if (options && options.angularVelRadians) {
-        angularVelRadians = options.angularVelRadians;
-        angularVelDegrees = 180 * angularVelRadians / Math.PI;
-      } else if (options && options.angularVelDegrees) {
-        angularVelDegrees = options.angularVelDegrees;
-        angularVelRadians = Math.PI * angularVelDegrees / 180;
-      } else {
-        angularVelDegrees = 0;
-        angularVelRadians = 0;
-      }
-      this.easelObj.x = xPixels;
-      this.easelObj.y = yPixels;
-      this.easelObj.rotation = angleDegrees;
-      this.body.GetPosition().x = xMeters;
-      this.body.GetPosition().y = yMeters - 2.3;
-      this.body.SetAngle(angleRadians);
-      this.body.SetAngularVelocity(angularVelRadians);
-      return this.body.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
-    };
-
-    getType = function(type) {
-      if ('dynamic' === type) {
-        return Box2D.Dynamics.b2Body.b2_dynamicBody;
-      } else if ('static' === type) {
-        return Box2D.Dynamics.b2Body.b2_staticBody;
-      } else if ('kinematic' === type) {
-        return Box2D.Dynamics.b2Body.b2_kinematicBody;
-      }
-    };
-
-    return EaselBoxBazooka;
-
-  })();
-
-  PIXELS_PER_METER = 10;
+  PIXELS_PER_METER = 22;
 
   window.EaselBoxWorld = (function() {
     var minFPS;
@@ -733,6 +362,9 @@
       Ticker.addListener(this);
       Ticker.setFPS(frameRate);
       this.box2dWorld = new Box2D.Dynamics.b2World(new Box2D.Common.Math.b2Vec2(gravityX, gravityY), true);
+      this.contactlistener = new EaselBoxContactListener();
+      this.box2dWorld.SetContactListener(this.contactlistener);
+      this.banana = null;
       this.easelStage = new Stage(canvas);
       this.objects = [];
       debugDraw = new Box2D.Dynamics.b2DebugDraw();
@@ -872,30 +504,41 @@
     };
 
     EaselBoxWorld.prototype.addBanana = function(options) {
-      var object;
-      object = new EaselBoxBanana(options);
-      object.body = this.box2dWorld.CreateBody(object.bodyDef);
-      object.body.CreateFixture(object.fixDef);
-      object.setType('dynamic');
-      object.setState(options);
-      this.objects.push(object);
-      return object;
+      this.banana = new EaselBoxBanana(options);
+      this.banana.body = this.box2dWorld.CreateBody(this.banana.bodyDef);
+      this.banana.fixture = this.banana.body.CreateFixture(this.banana.fixDef);
+      this.banana.setType('static');
+      this.banana.setState(options);
+      return this.objects.push(this.banana);
     };
 
-    EaselBoxWorld.removeBanana = function() {
-      return this.easelStage.removeChild(this.easelStage.getNumChildren() - 1);
+    EaselBoxWorld.prototype.shootBanana = function(x, y, angle) {
+      var force, position;
+      if (!this.easelStage.contains(this.banana.easelObj)) {
+        this.easelStage.addChild(this.banana.easelObj);
+        this.banana.setState({
+          xPixels: x,
+          yPixels: y
+        });
+        this.banana.setType("dynamic");
+        force = new Box2D.Common.Math.b2Vec2(Math.cos(angle) * 40, Math.sin(angle) * (-40));
+        position = new Box2D.Common.Math.b2Vec2(this.banana.body.GetPosition().x, this.banana.body.GetPosition().y);
+        return this.banana.body.ApplyImpulse(force, position);
+      } else {
+        return console.log("Already contained");
+      }
     };
 
     EaselBoxWorld.prototype.addMonkey = function(options) {
       var object;
-      object = new EaselBoxMonkey(options);
+      object = new EaselBoxMonkey(this, options);
       this.easelStage.addChild(object.easelObj);
       object.headbody = this.box2dWorld.CreateBody(object.bodyDefHead);
       object.torsobody = this.box2dWorld.CreateBody(object.bodyDefTorso);
       object.lowerbodybody = this.box2dWorld.CreateBody(object.bodyDefLowerbody);
-      object.headbody.CreateFixture(object.fixDefHead);
-      object.torsobody.CreateFixture(object.fixDefTorso);
-      object.lowerbodybody.CreateFixture(object.fixDefLowerbody);
+      object.headbodyfixture = object.headbody.CreateFixture(object.fixDefHead);
+      object.torsobodyfixture = object.torsobody.CreateFixture(object.fixDefTorso);
+      object.lowerbodybodyfixture = object.lowerbodybody.CreateFixture(object.fixDefLowerbody);
       object.setType('static');
       object.setState(options);
       this.objects.push(object);
@@ -906,7 +549,7 @@
       return object;
     };
 
-    EaselBoxWorld.prototype.addBox = function(options) {
+    EaselBoxWorld.prototype.addTower = function(options) {
       var object;
       object = new EaselBoxBox(options);
       this.easelStage.addChild(object.easelObj);
@@ -974,10 +617,6 @@
       }
       this.easelStage.update();
       return this.box2dWorld.DrawDebugData();
-    };
-
-    EaselBoxWorld.prototype.vector = function(x, y) {
-      return new Box2D.Common.Math.b2Vec2(x, y);
     };
 
     return EaselBoxWorld;
@@ -1076,13 +715,14 @@
     var getType;
 
     function EaselBoxBanana(options) {
-      var box2dShape, density, friction, regPoint, restitution;
+      var box2dShape, density, friction, restitution;
       this.easelObj = new Bitmap(options.imgSrc);
       this.easelObj.globalRegX = options.xPixels;
       this.easelObj.globalRegY = options.yPixels;
       this.easelObj.scaleX = options.scaleX;
       this.easelObj.scaleY = options.scaleY;
-      regPoint = new Box2D.Common.Math.b2Vec2(-10, -10);
+      this.easelObj.regX = options.regX;
+      this.easelObj.regY = options.regY;
       box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsBox((options.width / PIXELS_PER_METER) / 2, (options.height / PIXELS_PER_METER) / 2);
       density = (options && options.density) || 1;
       friction = (options && options.friction) || 0.5;
@@ -1098,7 +738,7 @@
 
     EaselBoxBanana.prototype.update = function() {
       this.easelObj.x = this.body.GetPosition().x * PIXELS_PER_METER;
-      this.easelObj.y = (this.body.GetPosition().y + 2.3) * PIXELS_PER_METER;
+      this.easelObj.y = (this.body.GetPosition().y) * PIXELS_PER_METER;
       return this.easelObj.rotation = this.body.GetAngle() * (180 / Math.PI);
     };
 
@@ -1172,7 +812,7 @@
       this.easelObj.y = yPixels;
       this.easelObj.rotation = angleDegrees;
       this.body.GetPosition().x = xMeters;
-      this.body.GetPosition().y = yMeters - 2.3;
+      this.body.GetPosition().y = yMeters;
       this.body.SetAngle(angleRadians);
       this.body.SetAngularVelocity(angularVelRadians);
       return this.body.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters));
@@ -1191,5 +831,52 @@
     return EaselBoxBanana;
 
   })();
+
+  window.EaselBoxContactListener = (function(_super) {
+    var MyContact;
+
+    __extends(EaselBoxContactListener, _super);
+
+    MyContact = (function() {
+
+      function MyContact(fixtureA, fixtureB) {
+        this.fixtureA = fixtureA;
+        this.fixtureB = fixtureB;
+      }
+
+      return MyContact;
+
+    })();
+
+    function EaselBoxContactListener() {
+      this.contacts = [];
+    }
+
+    EaselBoxContactListener.prototype.BeginContact = function(contact) {
+      var mycontact;
+      mycontact = new MyContact(contact.GetFixtureA(), contact.GetFixtureB());
+      return this.contacts.push(mycontact);
+    };
+
+    EaselBoxContactListener.prototype.EndContact = function(contact) {
+      var endcontact, i, index, _i, _len, _ref;
+      endcontact = new MyContact(contact.GetFixtureA(), contact.GetFixtureB());
+      index = 0;
+      _ref = this.contacts;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        if (endcontact.fixtureA === i.fixtureA && endcontact.fixtureB === i.fixtureB) {
+          break;
+        }
+        index++;
+      }
+      if (index >= 0) {
+        return this.contacts.splice(index, 1);
+      }
+    };
+
+    return EaselBoxContactListener;
+
+  })(Box2D.Dynamics.b2ContactListener);
 
 }).call(this);

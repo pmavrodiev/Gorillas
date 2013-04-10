@@ -8,15 +8,12 @@ individual_file_args = ['-c', '-o', 'examples/js', 'src/examples']
 # Listing files in order here -- order matters becauase of class inheiritance
 joined_file_args = ['-c', '-j', 'examples/js/easelBox.js', 
   'src/easelBox/easelBoxObject',
-  'src/easelBox/easelBoxCircle',
-  'src/easelBox/easelBoxRectangle',
   'src/easelBox/easelBoxLandscapeRectangle',
   'src/easelBox/easelBoxMonkey',
-  'src/easelBox/easelBoxArrow',
-  'src/easelBox/easelBoxBazooka',
   'src/easelBox/easelBoxWorld',
   'src/easelBox/easelBoxBox',
-  'src/easelBox/easelBoxBanana'
+  'src/easelBox/easelBoxBanana',
+  'src/easelBox/easelBoxContactListener'
 ]
 
 messages = (coffee) ->

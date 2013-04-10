@@ -1,6 +1,7 @@
 class window.EaselBoxMonkey
 
-  constructor: (options) ->
+  constructor: (@callingObject,options) ->
+    @voffset = options.voffset
     #INIT THE EASEL SHAPE
     #CREATE SPRITESHEET AND ASSIGN THE ASSOCIATE DATA
     @spriteSheet = options.SpriteSheet
@@ -68,22 +69,43 @@ class window.EaselBoxMonkey
     #torso->lower body
     @torsolowerbodyweldJointDef = new Box2D.Dynamics.Joints.b2WeldJointDef()
     
+  removeActionListeners: ->
+      @easelObj.onPress = (eventPress) =>       
     
-    
-    @easelObj.onPress = (eventPress) =>
-      @easelObj.angle = @prev_angle       
-      eventPress.onMouseMove = (event) =>        
+  addActionListeners: ->
+     @easelObj.onPress = (eventPress) =>
+       @easelObj.angle = @prev_angle
+       @easelObj.gotoAndPlay("approachbazooka")
+        
+       eventPress.onMouseMove = (event) =>        
         #90-theta-beta
-        @easelObj.angle=@prev_angle+Math.PI/2 - 
+         @easelObj.angle=@prev_angle+Math.PI/2 - 
                         Math.atan2(@easelObj.globalRegY-event.stageY,event.stageX-@easelObj.globalRegX)-
                         Math.atan2(eventPress.stageX-@easelObj.globalRegX,@easelObj.globalRegY-eventPress.stageY)
-        @setState(
-         angleRadians: @easelObj.angle,
-         xPixels: @easelObj.x, 
-         yPixels: @easelObj.y         
-         )        
-      eventPress.onMouseUp = (event) =>
+         @setState(
+          angleRadians: @easelObj.angle,
+          xPixels: @easelObj.x, 
+          yPixels: @easelObj.y         
+          )        
+       eventPress.onMouseUp = (event) =>
          @prev_angle = @easelObj.angle
+         #console.log @easelObj.angle*180/Math.PI
+         #get the new location of the muzzle of the bazooka
+         #original coordinate of the muzzle
+         #xm: (muzzle x coord. of bazooka - monkey.regX)*monkey.scaleX + monkey.xPixels
+         xm= (173-33)*1.0 + 75
+         #ym: (monkey.yPixels-5)-(monkey.regY-muzzle y coord. of bazooka)*monkey.scaleY
+         ym= (@voffset-75) - (165-15-(165-100))*1               
+         theta = Math.atan2(@easelObj.globalRegY-ym,xm-@easelObj.globalRegX)
+         beta = Math.PI/2 - theta - @easelObj.angle*-1
+         d = (@easelObj.globalRegY-ym)/Math.sin(theta)
+         x=d*Math.sin(beta)+@easelObj.globalRegX
+         y=@easelObj.globalRegY-d*Math.cos(beta)
+         #y=@easelObj.globalRegY
+         #console.log(@easelObj.globalRegX,@easelObj.globalRegY,x,y,@easelObj.angle*180/Math.PI,theta*180/Math.PI,xm,ym,beta*180/Math.PI)
+         @easelObj.gotoAndPlay("shoot")
+         @removeActionListeners()
+         @callingObject.shootBanana(x,y,@easelObj.angle*-1)
          
            
   
@@ -181,19 +203,19 @@ class window.EaselBoxMonkey
     # FOR BOX2D
     #head
     @headbody.GetPosition().x = xMeters
-    @headbody.GetPosition().y = yMeters-@size_torso_meters-@size_head_meters-0.1-8.5
+    @headbody.GetPosition().y = yMeters-@size_torso_meters-@size_head_meters-0.1-4
     @headbody.SetAngle(angleRadians)
     @headbody.SetAngularVelocity(angularVelRadians)
     @headbody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters))
     #torso
     @torsobody.GetPosition().x = xMeters
-    @torsobody.GetPosition().y = yMeters-8.5
+    @torsobody.GetPosition().y = yMeters-4
     @torsobody.SetAngle(angleRadians)
     @torsobody.SetAngularVelocity(angularVelRadians)
     @torsobody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters))
     #lower body 
     @lowerbodybody.GetPosition().x = xMeters
-    @lowerbodybody.GetPosition().y = yMeters+@size_torso_meters+@size_lowerbody_meters+0.1-8.5
+    @lowerbodybody.GetPosition().y = yMeters+@size_torso_meters+@size_lowerbody_meters+0.1-4
     @lowerbodybody.SetAngle(angleRadians)
     @lowerbodybody.SetAngularVelocity(angularVelRadians)
     @lowerbodybody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters))

@@ -4,18 +4,18 @@
   window.GhostsAndMonstersGame = (function() {
     var PIXELS_PER_METER, forceMultiplier, frameRate, gravityX, gravityY;
 
-    PIXELS_PER_METER = 10;
+    PIXELS_PER_METER = 22;
 
     gravityX = 0;
 
     gravityY = 10;
 
-    frameRate = 60;
+    frameRate = 25;
 
-    forceMultiplier = 5;
+    forceMultiplier = 7;
 
     $(document).ready(function() {
-      var canvas, debugCanvas, ph, pw, statsCanvas;
+      var audioExtension, background, canPlayMp3, canPlayOgg, canvas, debugCanvas, myAudio, ph, pw, statsCanvas;
       canvas = document.getElementById('easelCanvas');
       debugCanvas = document.getElementById('debugCanvas');
       statsCanvas = document.getElementById('stats');
@@ -29,6 +29,21 @@
       debugCanvas.width = pw * 0.9;
       debugCanvas.style.top = (ph - debugCanvas.height) / 2 + "px";
       debugCanvas.style.left = (pw - debugCanvas.width) / 2 + "px";
+      myAudio = document.createElement("audio");
+      background = new Audio();
+      audioExtension = ".none";
+      if (myAudio.canPlayType) {
+        canPlayMp3 = !!myAudio.canPlayType && "" !== myAudio.canPlayType('audio/mpeg');
+        canPlayOgg = !!myAudio.canPlayType && "" !== myAudio.canPlayType('audio/ogg; codecs="vorbis"');
+      }
+      if (canPlayMp3) {
+        audioExtension = ".mp3";
+      } else if (canPlayOgg) {
+        audioExtension = ".ogg";
+      }
+      background.src = "/sounds/background-music" + audioExtension;
+      background.loop = true;
+      background.autoplay = true;
       return new GhostsAndMonstersGame(canvas, debugCanvas, statsCanvas);
     });
 
@@ -47,31 +62,36 @@
         vertical_offset: this.voffset,
         type: 'static'
       });
-      this.banana = this.world.addBanana({
+      this.world.addBanana({
         imgSrc: "/img/BANANA/banana.png",
-        scaleX: 0.06,
-        scaleY: 0.06,
-        density: 2,
-        friction: 0.8,
-        restitution: 0.3,
-        width: 20,
-        height: 40,
-        xPixels: 80,
-        yPixels: 300
+        scaleX: 1,
+        scaleY: 1,
+        density: 1,
+        friction: 0,
+        restitution: 0,
+        width: 40,
+        height: 20,
+        xPixels: (625 - 110) * 0.3 + 75,
+        yPixels: (this.voffset - 5) - (550 - 240) * 0.3,
+        regX: 20,
+        regY: 20
       });
       this.monkey1 = this.world.addMonkey({
         SpriteSheet: new SpriteSheet({
-          images: ["/img/BREATH2/left/breath_left_1.png", "/img/BREATH2/left/breath_left_2.png", "/img/BREATH2/left/breath_left_3.png", "/img/BREATH2/left/breath_left_4.png", "/img/BREATH2/left/breath_left_5.png"],
+          images: ["/img/BREATH3/left/breath_left_1.png", "/img/BREATH3/left/breath_left_2.png", "/img/BREATH3/left/breath_left_2_copy.png", "/img/BREATH3/left/breath_left_3.png", "/img/BREATH3/left/breath_left_3_copy.png", "/img/BREATH3/left/breath_left_4.png", "/img/BREATH3/left/breath_left_4_copy.png", "/img/BREATH3/left/breath_left_5.png", "/img/BREATH3/left/approach-left-1.png", "/img/BREATH3/left/approach-left-1_copy.png", "/img/BREATH3/left/approach-left-2.png", "/img/BREATH3/left/approach-left-2_copy.png", "/img/BREATH3/left/approach-left-3.png", "/img/BREATH3/left/approach-left-3_copy.png", "/img/BREATH3/left/approach-left-4.png", "/img/BREATH3/left/approach-left-4_copy.png", "/img/BREATH3/left/approach-left-5.png", "/img/BREATH3/left/approach-left-5_copy.png", "/img/BREATH3/left/approach-left-6.png", "/img/BREATH3/left/shoot_left_1.png", "/img/BREATH3/left/shoot_left_2.png"],
           frames: {
-            width: 800,
-            height: 600
+            width: 220,
+            height: 165,
+            count: 21
           },
           animations: {
-            standby: [0, 4, "standby", 5]
+            standby: [0, 7, "standby", 2],
+            approachbazooka: [7, 18, false, 1],
+            shoot: [18, 20, false, 1]
           }
         }),
-        scaleX: 0.3,
-        scaleY: 0.3,
+        scaleX: 1,
+        scaleY: 1,
         size_head: 20,
         size_torso: 25,
         size_lowerbody: 32,
@@ -79,16 +99,18 @@
         friction: 0.8,
         restitution: 0.3,
         xPixels: 75,
-        yPixels: this.voffset - 5,
-        regX: 110,
-        regY: 550
+        yPixels: this.voffset - 75,
+        regX: 33,
+        regY: 165 - 15,
+        voffset: this.voffset
       });
-      this.box = this.world.addBox({
-        imgSrc: "/img/BOX/box.png",
-        scaleX: 1,
-        scaleY: 1,
-        xPixels: 8,
-        yPixels: this.voffset - 65
+      this.monkey1.addActionListeners();
+      this.tower = this.world.addTower({
+        imgSrc: "/img/TOWER/tower.png",
+        scaleX: 0.4,
+        scaleY: 0.3,
+        xPixels: 25,
+        yPixels: this.voffset - 125
       });
       this.monkey2 = this.world.addMonkey({
         SpriteSheet: new SpriteSheet({
@@ -116,33 +138,42 @@
         easelx: 100,
         easely: 100
       });
-      this.bazooka = this.world.addBazooka({
-        imgSrc: "/img/BAZOOKA/Bazooka.png",
-        scaleX: 1,
-        scaleY: 1,
-        density: 2,
-        friction: 0.8,
-        restitution: 0.3,
-        width: 40,
-        height: 125,
-        xPixels: 120,
-        yPixels: 120,
-        regX: 25.5,
-        regY: 128 - 1.92,
-        angleDegrees: 0
-      });
       /*
-          # optional: set up frame rate display
-          #@stats = new Stats()
-          #statsCanvas.appendChild @stats.domElement
-          
-        # optional: a callback for each EaselBox2dWorld tick()
-        tick: () ->
-          #@monkey1.ApplyForce(@world.box2dWorld.GetGravity());  
-          #@stats.update()
+          @bazooka = @world.addBazooka(
+            imgSrc: "/img/BAZOOKA/Bazooka.png"
+            scaleX: 1,
+            scaleY: 1,
+            density: 2,
+            friction: 0.8,
+            restitution: 0.3,
+            #dimensions of the  Box2D rectangle in pixels 
+            width: 40,
+            height: 125,
+            #the position of the easeljs object
+            xPixels: 120, 
+            yPixels: 130,       
+            regX: 25.5,
+            regY: 128-1.92,
+            angleDegrees: 0
+          )
       */
 
     }
+
+    GhostsAndMonstersGame.prototype.tick = function() {
+      var i, _i, _len, _ref, _results;
+      _ref = this.world.contactlistener.contacts;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        if ((i.fixtureA === this.world.banana.fixture && i.fixtureB === this.monkey2.headbodyfixture) || (i.fixtureA === this.monkey2.headbodyfixture && i.fixtureB === this.world.banana.fixture)) {
+          _results.push(console.log("headshot"));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
 
     return GhostsAndMonstersGame;
 

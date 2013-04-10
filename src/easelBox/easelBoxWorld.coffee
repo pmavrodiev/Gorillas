@@ -1,4 +1,4 @@
-PIXELS_PER_METER = 10
+PIXELS_PER_METER = 22
 
 class window.EaselBoxWorld
   minFPS = 10 # weird stuff happens when we step through the physics when the frame rate is lower than this
@@ -12,7 +12,13 @@ class window.EaselBoxWorld
                  
     # set up Box2d
     @box2dWorld = new Box2D.Dynamics.b2World(new Box2D.Common.Math.b2Vec2(gravityX, gravityY), true)
-
+    @contactlistener = new EaselBoxContactListener()
+    @box2dWorld.SetContactListener(@contactlistener)
+    
+    #the banana
+    @banana = null
+  
+    
     # set up EaselJS
     @easelStage = new Stage(canvas)    
     # array of entities to update later
@@ -142,20 +148,31 @@ class window.EaselBoxWorld
     return object     
    
   addBanana: (options) ->
-    object = new EaselBoxBanana(options)  
-    #@easelStage.addChild object.easelObj
-    object.body = @box2dWorld.CreateBody(object.bodyDef)
-    object.body.CreateFixture(object.fixDef)
-    object.setType('dynamic')
-    object.setState(options)
-    @objects.push(object)
-    return object
+    @banana = new EaselBoxBanana(options)  
+    #@easelStage.addChild @banana.easelObj
+    @banana.body = @box2dWorld.CreateBody(@banana.bodyDef)
+    @banana.fixture = @banana.body.CreateFixture(@banana.fixDef)
+    @banana.setType('static') #initially it is static
+    @banana.setState(options)
+    @objects.push(@banana)   
    
-  @removeBanana: () ->
-    @easelStage.removeChild(@easelStage.getNumChildren()-1)
+  shootBanana: (x,y,angle) ->
+    if not @easelStage.contains @banana.easelObj     
+      @easelStage.addChild @banana.easelObj
+      @banana.setState(xPixels: x, yPixels:y)      
+      @banana.setType("dynamic")
+      force= new Box2D.Common.Math.b2Vec2(Math.cos(angle)*40,Math.sin(angle)*(-40))
+      position = new Box2D.Common.Math.b2Vec2(@banana.body.GetPosition().x,@banana.body.GetPosition().y)
+      #@banana.body.SetAwake(true)
+      #@banana.body.SetLinearVelocity(force)
+      @banana.body.ApplyImpulse(force,position)
+      #@banana.body.SetAngularVelocity(6)
+      
+    else
+      console.log "Already contained"
    
   addMonkey: (options) ->
-    object = new EaselBoxMonkey(options)
+    object = new EaselBoxMonkey(this,options)
     #add to canvas
     @easelStage.addChild object.easelObj
     
@@ -164,9 +181,9 @@ class window.EaselBoxWorld
     object.torsobody = @box2dWorld.CreateBody(object.bodyDefTorso)
     object.lowerbodybody = @box2dWorld.CreateBody(object.bodyDefLowerbody)
     #bind bodies to shapes
-    object.headbody.CreateFixture(object.fixDefHead)
-    object.torsobody.CreateFixture(object.fixDefTorso)
-    object.lowerbodybody.CreateFixture(object.fixDefLowerbody)
+    object.headbodyfixture=object.headbody.CreateFixture(object.fixDefHead)
+    object.torsobodyfixture=object.torsobody.CreateFixture(object.fixDefTorso)
+    object.lowerbodybodyfixture=object.lowerbodybody.CreateFixture(object.fixDefLowerbody)
     object.setType('static')
     object.setState(options)
     @objects.push(object)    
@@ -179,7 +196,7 @@ class window.EaselBoxWorld
     @box2dWorld.CreateJoint(object.torsolowerbodyweldJointDef)  
     return object
     
-  addBox: (options) ->
+  addTower: (options) ->
     object = new EaselBoxBox(options)  
     @easelStage.addChild object.easelObj
     object.setState(options)
@@ -235,11 +252,9 @@ class window.EaselBoxWorld
         object.update()
     
     # check to see if main object has a callback for each tick
-    if typeof @callingObj.tick == 'function'
+    if typeof @callingObj.tick == 'function'      
       @callingObj.tick()
  
     @easelStage.update()
     @box2dWorld.DrawDebugData()
   
-  vector: (x, y) ->
-    new Box2D.Common.Math.b2Vec2(x, y)  

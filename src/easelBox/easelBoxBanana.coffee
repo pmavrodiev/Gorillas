@@ -6,11 +6,12 @@ class window.EaselBoxBanana
     @easelObj.globalRegY =  options.yPixels   
     @easelObj.scaleX = options.scaleX
     @easelObj.scaleY = options.scaleY
-    # init the Box2d physics entity
-    regPoint = new Box2D.Common.Math.b2Vec2(-10,-10)
+    @easelObj.regX = options.regX
+    @easelObj.regY = options.regY
+    # init the Box2d physics entity    
     box2dShape = new Box2D.Collision.Shapes.b2PolygonShape.AsBox((options.width/PIXELS_PER_METER)/2,
                                                                  (options.height/PIXELS_PER_METER)/2)
-                                                                 
+                                                               
     density = (options and options.density) or 1
     friction = (options and options.friction) or 0.5
     restitution = (options and options.restitution) or 0.2
@@ -25,7 +26,7 @@ class window.EaselBoxBanana
   #update canvas position based on the physical position of the torso!
   update: () ->
      @easelObj.x = @body.GetPosition().x * PIXELS_PER_METER
-     @easelObj.y = (@body.GetPosition().y+2.3) * PIXELS_PER_METER
+     @easelObj.y = (@body.GetPosition().y) * PIXELS_PER_METER
      @easelObj.rotation = @body.GetAngle() * (180 / Math.PI)
     
   setType: (type) ->
@@ -100,18 +101,13 @@ class window.EaselBoxBanana
     @easelObj.y = yPixels
     @easelObj.rotation = angleDegrees
 
-    # FOR BOX2D
-    #torso
+    # FOR BOX2D   
     @body.GetPosition().x = xMeters
-    @body.GetPosition().y = yMeters - 2.3  #-2.3 to align the easel and box2d objects vertically
+    @body.GetPosition().y = yMeters 
     @body.SetAngle(angleRadians)
     @body.SetAngularVelocity(angularVelRadians)
     @body.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(xVelMeters, yVelMeters))
-    #massdata = new Box2D.Collision.Shapes.b2MassData()
-    #@body.GetMassData(massdata)
-    #massdata.center.Set(0,3) #Set(x,y)    
-    #@body.SetMassData massdata
-    
+   
     
   getType= (type) ->
     if 'dynamic' == type
